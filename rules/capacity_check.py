@@ -1,5 +1,5 @@
 import sqlite3
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 def run_check(db_path="aerospike_health.db"):
     conn = sqlite3.connect(db_path)

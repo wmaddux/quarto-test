@@ -16,19 +16,39 @@ import sqlite3
 import pandas as pd
 import plotly.express as px
 import os
-import datetime  # <--- Added this
-from rules import delete_not_found_check, read_not_found_check, config_symmetry_check
+import datetime
+
+# --- Import Reinstated Rules ---
+from rules import (
+    hot_key_check,
+    service_error_skew_check,
+    sindex_on_flash_check,
+    sprig_limit_check,
+    storage_deadlock_check,
+    config_symmetry_check,
+    read_not_found_check,
+    delete_not_found_check,
+    hwm_check,
+    memory_hwm_check
+)
 
 # --- Baseline Metadata ---
-PROJECT_VERSION = "1.1.0"
-GEN_DATE = datetime.datetime.now().strftime("%Y-%m-%d %H:%M") # <--- Added this
+PROJECT_VERSION = "1.2.0"
+GEN_DATE = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 db_path = "aerospike_health.db"
 
-# Core Ruleset
+# --- Execute Reinstated Ruleset ---
 results = [
-    delete_not_found_check.run_check(db_path),
+    hot_key_check.run_check(db_path),
+    service_error_skew_check.run_check(db_path),
+    sindex_on_flash_check.run_check(db_path),
+    sprig_limit_check.run_check(db_path),
+    storage_deadlock_check.run_check(db_path),
+    config_symmetry_check.run_check(db_path),
     read_not_found_check.run_check(db_path),
-    config_symmetry_check.run_check(db_path)
+    delete_not_found_check.run_check(db_path),
+    hwm_check.run_check(db_path),
+    memory_hwm_check.run_check(db_path)
 ]
 
 # Summary Stats Logic
@@ -141,27 +161,58 @@ if not df.empty:
 # Observations and Remediation
 
 ```{python}
-#| label: observations
+#| label: observations-remediation
 #| echo: false
-#| output: asis
-for o in [r for r in results if r['status'] != 'PASS']:
-    print(f"### {o['name']}")
-    print(f"::: {{.callout-important}}")
-    print(f"**Finding:** {o['message']}")
-    if 'remediation' in o:
-        print(f"\n**Recommendation:** {o['remediation']}")
-    print(":::\n")
+#| results: asis
+
+from IPython.display import display, Markdown
+
+# Filter for only actionable items
+actionable = [res for res in results if res['status'] != "PASS"]
+
+if not actionable:
+    display(Markdown("\n\n> ✅ **All checks passed.** No critical issues detected in this snapshot.\n"))
+else:
+    # Build a single big markdown string
+    md_output = ""
+    for res in actionable:
+        remediation = res.get('remediation', "Review cluster telemetry and application logs for further investigation.")
+        
+        md_output += f"### {res['name']}\n\n"
+        md_output += f"{res['message']}\n\n"
+        md_output += f"**Recommendation:** {remediation}\n\n"
+        md_output += "---\n\n"
+    
+    # Display the final string as a single Markdown object
+    display(Markdown(md_output))
 ```
 
 # Appendix: All Tests Performed
-| Test Name | Status | Summary |
-|-----------|--------|---------|
+
 ```{python}
 #| label: test-table
 #| echo: false
-#| output: asis
+
+import pandas as pd
+from IPython.display import display, HTML
+
+table_data = []
 for res in results:
-    print(f"| {res['name']} | {res['status']} | {res['message']} |")
+    # Clean up the name for the table (optional: remove the ID if you just want the name)
+    clean_name = res['name'].split(":", 1)[-1].strip() if ":" in res['name'] else res['name']
+    
+    # Map status to the Emoji + Text format seen in your screenshots
+    status_icon = "✅" if res['status'] == "PASS" else "❌" if res['status'] == "CRITICAL" else "⚠️"
+    status_html = f"{status_icon} {res['status']}"
+    
+    table_data.append({
+        "Check Name": clean_name,
+        "Status": status_html
+    })
+
+df_app = pd.DataFrame(table_data)
+# Applying 'table-hover' for that professional feel
+display(HTML(df_app.to_html(index=False, escape=False, classes='table table-hover')))
 ```
 
 # TAM Technical Details
