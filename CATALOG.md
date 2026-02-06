@@ -41,5 +41,5 @@ This catalog tracks the health check logic implemented in the analyzer. Status i
 | 5.b | Sizing Capability | — | ❌ Not Implemented | Projecting growth based on current ingestion rates. |
 
 ---
-**Baseline:** v1.2.0  
+**Baseline:** v1.3.0
 **Last Updated:** 2026-02-06

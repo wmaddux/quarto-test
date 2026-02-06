@@ -18,7 +18,7 @@ import plotly.express as px
 import os
 import datetime
 
-# --- Import Reinstated Rules ---
+# --- Import Rules ---
 from rules import (
     hot_key_check,
     service_error_skew_check,
@@ -29,11 +29,13 @@ from rules import (
     read_not_found_check,
     delete_not_found_check,
     hwm_check,
-    memory_hwm_check
+    memory_hwm_check,
+    ena_support_check,         
+    version_consistency_check  
 )
 
 # --- Baseline Metadata ---
-PROJECT_VERSION = "1.2.0"
+PROJECT_VERSION = "1.3.0"  # Updated version
 GEN_DATE = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 db_path = "aerospike_health.db"
 
@@ -48,7 +50,9 @@ results = [
     read_not_found_check.run_check(db_path),
     delete_not_found_check.run_check(db_path),
     hwm_check.run_check(db_path),
-    memory_hwm_check.run_check(db_path)
+    memory_hwm_check.run_check(db_path),
+    ena_support_check.run_check(db_path),        # New execution
+    version_consistency_check.run_check(db_path) # New execution
 ]
 
 # Summary Stats Logic
