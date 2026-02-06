@@ -1,0 +1,129 @@
+---
+title: "Aerospike Health and Performance Report"
+author: "Aerospike TAM Team"
+date: last-modified
+format:
+  html:
+    toc: true
+    theme: cosmo
+    self-contained: true
+---
+
+```{python}
+#| label: setup
+#| include: false
+import sqlite3
+import pandas as pd
+import plotly.express as px
+import os
+from rules import delete_not_found_check, read_not_found_check, config_symmetry_check
+
+db_path = "aerospike_health.db"
+
+# Core Ruleset
+results = [
+    delete_not_found_check.run_check(db_path),
+    read_not_found_check.run_check(db_path),
+    config_symmetry_check.run_check(db_path)
+]
+
+# Summary Stats Logic
+conn = sqlite3.connect(db_path)
+dnf_query = "SELECT SUM(value) as total FROM namespace_stats WHERE metric = 'service.client_delete_not_found'"
+dnf_val = pd.read_sql_query(dnf_query, conn)['total'].iloc[0]
+node_count = pd.read_sql_query("SELECT COUNT(DISTINCT node_id) as count FROM node_stats", conn)['count'].iloc[0]
+conn.close()
+formatted_dnf = "{:,}".format(int(dnf_val)) if dnf_val else "0"
+```
+
+# Executive Summary
+
+This report provides a health assessment for the Aerospike cluster consisting of `{python} int(node_count)` nodes. Analysis identified **`{python} formatted_dnf`** "Delete Not Found" events, suggesting application-side logic gaps.
+
+::: {.callout-note}
+## TAM Overview
+The cluster is stable, but high DNF rates indicate unnecessary IOPS pressure. Reviewing application "blind delete" patterns is the primary recommendation.
+:::
+
+## Cluster Status Overview
+```{python}
+#| label: cluster-overview
+#| echo: false
+#| output: asis
+
+for res in results:
+    if res['status'] in ['CRITICAL', 'WARNING']:
+        status_style = "danger" if res['status'] == "CRITICAL" else "warning"
+        print(f"::: {{.callout-{status_style}}}")
+        print(f"## {res['name']}")
+        print(f"{res['message']}")
+        print(":::\n")
+```
+
+# Performance and Utilization
+
+## Disk Usage %
+```{python}
+#| label: disk-chart
+#| echo: false
+conn = sqlite3.connect(db_path)
+query = "SELECT node_id, value FROM node_stats WHERE metric LIKE 'service.storage-engine.%used_percentage'"
+df = pd.read_sql_query(query, conn)
+conn.close()
+
+if not df.empty:
+    fig = px.bar(df, x='node_id', y='value', title="Disk Usage % per Node")
+    fig.show()
+```
+
+## Client Connections
+```{python}
+#| label: connections-chart
+#| echo: false
+conn = sqlite3.connect(db_path)
+query = "SELECT node_id, value FROM node_stats WHERE metric = 'service.client_connections'"
+df = pd.read_sql_query(query, conn)
+conn.close()
+if not df.empty:
+    fig = px.bar(df, x='node_id', y='value', title="Client Connections by Node")
+    fig.show()
+```
+
+# Observations and Remediation
+
+```{python}
+#| label: observations
+#| echo: false
+#| output: asis
+for o in [r for r in results if r['status'] != 'PASS']:
+    print(f"### {o['name']}")
+    print(f"::: {{.callout-important}}")
+    print(f"**Finding:** {o['message']}")
+    if 'remediation' in o:
+        print(f"\n**Recommendation:** {o['remediation']}")
+    print(":::\n")
+```
+
+# Appendix: All Tests Performed
+| Test Name | Status | Summary |
+|-----------|--------|---------|
+```{python}
+#| label: test-table
+#| echo: false
+#| output: asis
+for res in results:
+    print(f"| {res['name']} | {res['status']} | {res['message']} |")
+```
+
+# TAM Technical Details
+
+### Node Statistics (Sample)
+```{python}
+#| label: node-stats-table
+#| echo: false
+conn = sqlite3.connect(db_path)
+df = pd.read_sql_query("SELECT node_id, metric, value FROM node_stats ORDER BY RANDOM() LIMIT 10", conn)
+conn.close()
+from IPython.display import display, HTML
+display(HTML(df.to_html(index=False, classes='table table-striped')))
+```

@@ -1,0 +1,32 @@
+
+~~~ summary ~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Cluster Summary~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Migrations                |False                                                             
+Cluster Name              |common-edge_va6prod                                               
+Server Version            |E-7.2.0.6                                                         
+OS Version                |--                                                                
+Cluster Size              |5                                                                 
+Devices Total             |15                                                                
+Devices Per-Node          |3                                                                 
+Devices Equal Across Nodes|True                                                              
+Shmem Index Used          |148.146 GB                                                        
+Device Total              |3.240 TB                                                          
+Device Used               |842.350 GB                                                        
+Device Used%              |25.39 %                                                           
+Device Avail              |2.097 TB                                                          
+Device Avail%             |64.73 %                                                           
+License Usage Latest      |312.430 GB                                                        
+Namespaces Active         |3                                                                 
+Namespaces Total          |3                                                                 
+Active Features           |KVS,UDF,Batch,PIndex Query,XDR Destination,Security,Index-on-shmem
+Number of rows: 18
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Namespace Summary~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   Namespace|~~~~Drives~~~~|~~~~~~~~~Device~~~~~~~~|Replication| Cache|   Master|Compression|~License~~
+            |Total|Per-Node|   Total|  Used%|Avail%|    Factors| Read%|  Objects|      Ratio|~~Usage~~~
+            |     |        |        |       |      |           |      |         |           |    Latest
+counter     |    5|       1|1.080 TB|  0.0 %|99.0 %|          3| 0.0 %|  9.000  |        1.0|  1.532 KB
+dist-counter|    5|       1|1.080 TB|39.17 %|39.2 %|          3|14.0 %|473.090 M|        1.0|127.213 GB
+lookup-store|    5|       1|1.080 TB| 37.0 %|56.0 %|          2| 0.0 %|533.103 M|        1.0|185.217 GB
+Number of rows: 3
+

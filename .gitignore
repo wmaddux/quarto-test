@@ -1,0 +1,19 @@
+cat <<EOF > .gitignore
+# SQLite Database
+aerospike_health.db
+
+# Python
+__pycache__/
+ingest/__pycache__/
+rules/__pycache__/
+*.py[cod]
+
+# Quarto / Pandoc
+.quarto/
+report.quarto_ipynb
+report_files/
+_site/
+
+# Raw Telemetry Data (Large files)
+*.tgz
+EOF

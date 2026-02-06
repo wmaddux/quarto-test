@@ -1,0 +1,15 @@
+project:
+  type: website
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    code-fold: true  # Allows customers to hide/show the Python logic
+    self-contained: true
+    title-block-banner: "#141D73" # Aerospike Red
+    title-block-banner-color: "white" # High-contrast text
+
+
+
