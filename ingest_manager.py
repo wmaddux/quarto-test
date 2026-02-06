@@ -7,6 +7,7 @@ import zipfile
 import io
 import os
 import sys
+__version__ = "1.1.0"
 
 # These are the files in your ingest/ folder
 import ingest.node_stats_ingest_ci as node_stats

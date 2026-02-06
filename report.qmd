@@ -16,8 +16,12 @@ import sqlite3
 import pandas as pd
 import plotly.express as px
 import os
+import datetime  # <--- Added this
 from rules import delete_not_found_check, read_not_found_check, config_symmetry_check
 
+# --- Baseline Metadata ---
+PROJECT_VERSION = "1.1.0"
+GEN_DATE = datetime.datetime.now().strftime("%Y-%m-%d %H:%M") # <--- Added this
 db_path = "aerospike_health.db"
 
 # Core Ruleset
@@ -29,10 +33,20 @@ results = [
 
 # Summary Stats Logic
 conn = sqlite3.connect(db_path)
-dnf_query = "SELECT SUM(value) as total FROM namespace_stats WHERE metric = 'service.client_delete_not_found'"
-dnf_val = pd.read_sql_query(dnf_query, conn)['total'].iloc[0]
-node_count = pd.read_sql_query("SELECT COUNT(DISTINCT node_id) as count FROM node_stats", conn)['count'].iloc[0]
+# Note: Added a try/except or fillna to handle empty telemetry gracefully
+try:
+    dnf_query = "SELECT SUM(value) as total FROM namespace_stats WHERE metric = 'service.client_delete_not_found'"
+    dnf_result = pd.read_sql_query(dnf_query, conn)
+    dnf_val = dnf_result['total'].iloc[0] if not dnf_result.empty else 0
+    
+    node_query = "SELECT COUNT(DISTINCT node_id) as count FROM node_stats"
+    node_count = pd.read_sql_query(node_query, conn)['count'].iloc[0]
+except Exception as e:
+    dnf_val = 0
+    node_count = 0
+
 conn.close()
+
 formatted_dnf = "{:,}".format(int(dnf_val)) if dnf_val else "0"
 ```
 
@@ -62,18 +76,53 @@ for res in results:
 
 # Performance and Utilization
 
-## Disk Usage %
+## Disk Usage % by Node
+
 ```{python}
 #| label: disk-chart
 #| echo: false
+import sqlite3
+import pandas as pd
+import plotly.express as px
+
 conn = sqlite3.connect(db_path)
-query = "SELECT node_id, value FROM node_stats WHERE metric LIKE 'service.storage-engine.%used_percentage'"
+
+# Querying the specific 7.2 namespace metric we verified exists
+query = """
+SELECT 
+    node_id, 
+    namespace,
+    CAST(value AS FLOAT) as value 
+FROM namespace_stats 
+WHERE metric = 'service.data_used_pct'
+"""
 df = pd.read_sql_query(query, conn)
 conn.close()
 
 if not df.empty:
-    fig = px.bar(df, x='node_id', y='value', title="Disk Usage % per Node")
+    fig = px.bar(
+        df, 
+        x='node_id', 
+        y='value', 
+        color='namespace',
+        barmode='group',
+        title="Disk Usage % by Node",
+        labels={'value': 'Used %', 'node_id': 'Node', 'namespace': 'Namespace'},
+        range_y=[0, 100],
+        color_discrete_sequence=px.colors.qualitative.Bold
+    )
+    
+    # Add High Water Mark Line (Aerospike default is often 60%)
+    fig.add_hline(y=60, line_dash="dot", line_color="red", 
+                 annotation_text="HWM (60%)", annotation_position="top left")
+    
+    fig.update_layout(yaxis_ticksuffix="%")
     fig.show()
+else:
+    print("::: {.callout-warning}")
+    print("## Storage Metrics Missing")
+    print("The metric 'service.data_used_pct' returned no rows. This can happen if the cluster is 'data-in-memory: true' without disk backing.")
+    print(":::")
 ```
 
 ## Client Connections
@@ -127,3 +176,8 @@ conn.close()
 from IPython.display import display, HTML
 display(HTML(df.to_html(index=False, classes='table table-striped')))
 ```
+---
+
+::: {style="text-align: center; font-size: 0.8em; color: gray;"}
+**Aerospike Health Analyzer** | Version: `{python} PROJECT_VERSION` | Generated: `{python} GEN_DATE`
+:::

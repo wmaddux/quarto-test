@@ -17,3 +17,6 @@ _site/
 # Raw Telemetry Data (Large files)
 *.tgz
 EOF
+
+/.quarto/
+**/*.quarto_ipynb

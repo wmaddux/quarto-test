@@ -1,4 +1,5 @@
 import sqlite3
+__version__ = "1.1.0"
 
 def run_ingest(node_id, as_stat, conn, run_id):
     cursor = conn.cursor()
