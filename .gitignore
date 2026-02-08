@@ -1,22 +1,17 @@
-cat <<EOF > .gitignore
-# SQLite Database
+# Aerospike Health Analyzer Exclusions
 aerospike_health.db
+*.log
+*.tmp
+.DS_Store
 
-# Python
+# Python Exclusions
 __pycache__/
-ingest/__pycache__/
-rules/__pycache__/
 *.py[cod]
+*.class
+venv/
+env/
 
-# Quarto / Pandoc
+# Quarto / Rendering Exclusions
 .quarto/
-report.quarto_ipynb
-report_files/
-_site/
-
-# Raw Telemetry Data (Large files)
-*.tgz
-EOF
-
-/.quarto/
-**/*.quarto_ipynb
+*_files/
+*_cache/
