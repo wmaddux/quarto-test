@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 def run_check(db_path="aerospike_health.db"):
     conn = sqlite3.connect(db_path)
@@ -16,7 +16,7 @@ def run_check(db_path="aerospike_health.db"):
     formatted_rnf = "{:,}".format(int(total_rnf))
     
     return {
-        "name": "4.b: Read Not Found",
+        "id": "4.b", "name": "Read Not Found",
         "status": "INFO",
         "message": f"Detected {formatted_rnf} 'Read Not Found' events. This is often normal for application cache-miss workflows.",
         "remediation": "If the application expects all records to exist, investigate potential expiration or eviction issues."

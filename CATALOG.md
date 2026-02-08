@@ -1,4 +1,4 @@
-# Aerospike Health Analyzer: Master Rule Catalog (v1.2.0)
+# Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)
 
 This catalog tracks the health check logic implemented in the analyzer. Status is updated based on the current baseline.
 
@@ -6,8 +6,8 @@ This catalog tracks the health check logic implemented in the analyzer. Status i
 | ID | Rule Name | Implementation File | Status | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | 1.a | Service Error Skew | `service_error_skew_check.py` | ✅ Implemented | Checks for uneven distribution of errors across nodes. |
-| 1.b | ENA Support Check | — | ❌ Not Implemented | Validates Enhanced Networking is enabled for AWS instances. |
-| 1.c | Version Consistency | — | ❌ Not Implemented | Ensures all nodes are running the same Aerospike version. |
+| 1.b | ENA Support Check | `ena_support_check.py` | ✅ Implemented | Validates ENA for AWS or provides guidance if telemetry is missing. |
+| 1.c | Version Consistency | `version_consistency_check.py` | ✅ Implemented | Ensures all nodes are running the same Aerospike build/version. |
 
 ## 2. Storage & Capacity
 | ID | Rule Name | Implementation File | Status | Description |
@@ -42,4 +42,4 @@ This catalog tracks the health check logic implemented in the analyzer. Status i
 
 ---
 **Baseline:** v1.3.0
-**Last Updated:** 2026-02-06
+**Last Updated:** 2026-02-07

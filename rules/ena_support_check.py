@@ -12,7 +12,7 @@ def run_check(db_path="aerospike_health.db"):
     # The -1 value comes from our new 'Mock/Unknown' ingest logic
     if df.empty or (df['value'] == -1).any():
         return {
-            "name": "1.b: ENA Support Check",
+            "id": "1.b", "name": "ENA Support Check",
             "status": "INFO",
             "message": "ENA Telemetry Missing: OS-level statistics were not found in this bundle.",
             "remediation": "To retrieve this data, run 'collectinfo' as root or use 'asadm --lsmod --ethtool'. Manually verify with: 'ethtool -i eth0'."
@@ -21,14 +21,14 @@ def run_check(db_path="aerospike_health.db"):
     critical_nodes = df[df['value'] == 0]
     if not critical_nodes.empty:
         return {
-            "name": "1.b: ENA Support Check",
+            "id": "1.b", "name": "ENA Support Check",
             "status": "CRITICAL",
             "message": f"ENA driver missing on {len(critical_nodes)} nodes.",
             "remediation": "AWS Nitro instances require the ENA driver for optimal networking. See AWS ENA documentation."
         }
 
     return {
-        "name": "1.b: ENA Support Check",
+        "id": "1.b", "name": "ENA Support Check",
         "status": "PASS",
         "message": "ENA Support is verified and active on all cluster nodes."
     }

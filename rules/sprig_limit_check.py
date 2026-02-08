@@ -1,5 +1,5 @@
 import sqlite3
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 def run_check(db_path="aerospike_health.db"):
     conn = sqlite3.connect(db_path)
@@ -14,7 +14,7 @@ def run_check(db_path="aerospike_health.db"):
 
     if not flash_indexes:
         return {
-            "name": "2.b: Sprig Limit Warning",
+            "id": "2.b", "name": "Sprig Limit Warning",
             "status": "PASS",
             "message": "Not Applicable: No namespaces are currently configured for Index-on-Flash.",
             "remediation": "N/A"

@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 def run_check(db_path="aerospike_health.db"):
     conn = sqlite3.connect(db_path)
@@ -21,7 +21,7 @@ def run_check(db_path="aerospike_health.db"):
         return {"name": "Rule 4.b: Config Symmetry", "status": "PASS", "message": "All cluster-wide configurations are symmetric."}
 
     return {
-        "name": "3.a: Config Symmetry",
+        "id": "3.a", "name": "Config Symmetry",
         "status": "WARNING",
         "message": f"Detected {len(df)} configuration drifts across the cluster.",
         "remediation": "Check the Technical Details section to identify which specific parameters (e.g. memory, timeouts) differ."

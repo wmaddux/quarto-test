@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 def run_check(db_path="aerospike_health.db"):
     conn = sqlite3.connect(db_path)
@@ -18,7 +18,7 @@ def run_check(db_path="aerospike_health.db"):
     status = "WARNING" if total_dnf > 1000000 else "INFO"
     
     return {
-        "name": "4.c: Delete Not Found",
+        "id": "4.c", "name": "Delete Not Found",
         "status": status,
         "message": f"Detected {formatted_dnf} 'Delete Not Found' events across {df['node_id'].nunique()} nodes.",
         "remediation": "This suggests the application is attempting to delete records that do not exist (Blind Deletes). Review application logic."

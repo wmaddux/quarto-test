@@ -1,5 +1,5 @@
 import sqlite3
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 def run_check(db_path="aerospike_health.db"):
     conn = sqlite3.connect(db_path)
@@ -18,14 +18,14 @@ def run_check(db_path="aerospike_health.db"):
 
     if not rows:
         return {
-            "name": "4.a: Hot Key Detection", 
+            "id": "4.a", "name": "Hot Key Detection", 
             "status": "PASS", 
             "message": "No 'key busy' errors detected in this snapshot."
         }
 
     findings = [f"{r['namespace']} on {r['node_id']} (Count: {int(r['value'])})" for r in rows]
     return {
-        "name": "4.a: Hot Key Detection",
+        "id": "4.a", "name": "Hot Key Detection",
         "status": "WARNING",
         "message": f"Hot keys detected: {', '.join(findings)}",
         "remediation": "Investigate application access patterns for high-frequency keys. Consider increasing transaction-pending-limit if this is expected traffic."

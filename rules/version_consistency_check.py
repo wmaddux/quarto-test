@@ -10,19 +10,19 @@ def run_check(db_path="aerospike_health.db"):
     try:
         df = pd.read_sql_query(query, conn)
     except Exception:
-        return {"name": "1.c: Version Consistency", "status": "INFO", "message": "Telemetry not yet ingested."}
+        return {"id": "1.c", "name": "Version Consistency", "status": "INFO", "message": "Telemetry not yet ingested."}
     finally:
         conn.close()
 
     if df.empty:
-        return {"name": "1.c: Version Consistency", "status": "WARNING", "message": "No version/build found."}
+        return {"id": "1.c", "name": "Version Consistency", "status": "WARNING", "message": "No version/build found."}
 
     unique_versions = df['value'].unique()
     if len(unique_versions) > 1:
         return {
-            "name": "1.c: Version Consistency", 
+            "id": "1.c", "name": "Version Consistency", 
             "status": "CRITICAL", 
             "message": f"Mismatches: {', '.join(unique_versions)}"
         }
 
-    return {"name": "1.c: Version Consistency", "status": "PASS", "message": f"Cluster consistent on {unique_versions[0]}"}
+    return {"id": "1.c", "name": "Version Consistency", "status": "PASS", "message": f"Cluster consistent on {unique_versions[0]}"}

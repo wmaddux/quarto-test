@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 
 # --- CONFIGURATION ---
-NEW_VERSION = "1.2.0"
+NEW_VERSION = "1.3.0"
 TARGET_DIRS = [".", "rules", "ingest"] # Root, rules folder, and ingest folder
 DATE_STR = datetime.now().strftime("%Y-%m-%d")
 

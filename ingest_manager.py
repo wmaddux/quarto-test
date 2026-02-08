@@ -8,20 +8,15 @@ import io
 import os
 import sys
 
-# Incremented for v1.3.0 backlog
+# Incremented for v1.3.0
 __version__ = "1.3.0"
 
-# Existing ingest modules
 import ingest.node_stats_ingest_ci as node_stats
 import ingest.namespace_stats_ingest_ci as ns_stats
 import ingest.config_ingest_ci as config_ingest
-
-# New module for System/Network telemetry
-# You will create this file in the next step
 import ingest.system_info_ingest_ci as sys_ingest
 
 def get_json_content(tar, member):
-    """Handles the nested archive layers of Aerospike collectinfo."""
     f_bytes = tar.extractfile(member).read()
     if member.name.endswith('.zip'):
         with zipfile.ZipFile(io.BytesIO(f_bytes)) as z:
@@ -31,9 +26,14 @@ def get_json_content(tar, member):
     return json.loads(f_bytes.decode('utf-8'))
 
 def process_collectinfo(input_path, db_path="aerospike_health.db"):
+    # Clear old data to prevent stacked/doubled bars in the report
+    if os.path.exists(db_path):
+        os.remove(db_path)
+        print(f"🧹 Database cleared: {db_path} for fresh v1.3.0 ingestion.")
+            
     print(f"🚀 Processing v{__version__}: {input_path}")
     conn = sqlite3.connect(db_path)
-    
+        
     try:
         with tarfile.open(input_path, "r:*") as tar:
             target = next((m for m in tar.getmembers() if "ascinfo.json" in m.name), None)
