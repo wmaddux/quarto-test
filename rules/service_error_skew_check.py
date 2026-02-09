@@ -1,5 +1,5 @@
 import sqlite3
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 
 def run_check(db_path="aerospike_health.db"):
     conn = sqlite3.connect(db_path)
@@ -41,8 +41,9 @@ def run_check(db_path="aerospike_health.db"):
     findings = [f"{r['metric']} on {r['node_id']} (Value: {r['value']} vs Avg: {r['avg_val']:.1f})" for r in rows]
     
     return {
+        "id": "1.a",  # Added missing ID to match your template
         "name": "Service Error Skew",
         "status": "WARNING",
         "message": f"Skewed error patterns detected: {'; '.join(findings)}",
-        "remediation": "Investigate network stability or hardware health on the outlier nodes. Skewed errors often precede node failure or indicate localized congestion." [cite: 44, 45]
+        "remediation": "Investigate network stability or hardware health on the outlier nodes. Skewed errors often precede node failure or indicate localized congestion."
     }

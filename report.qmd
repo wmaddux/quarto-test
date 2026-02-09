@@ -17,30 +17,54 @@ import pandas as pd
 import plotly.express as px
 import os
 import datetime
+from IPython.display import display, Markdown, HTML
 
 # --- Import Rules ---
 from rules import (
-    hot_key_check,
-    service_error_skew_check,
-    sindex_on_flash_check,
-    sprig_limit_check,
-    storage_deadlock_check,
-    config_symmetry_check,
-    read_not_found_check,
-    delete_not_found_check,
-    hwm_check,
-    memory_hwm_check,
-    ena_support_check,         
-    version_consistency_check,
+    hot_key_check, service_error_skew_check, sindex_on_flash_check,
+    sprig_limit_check, storage_deadlock_check, config_symmetry_check,
+    read_not_found_check, delete_not_found_check, hwm_check,
+    memory_hwm_check, ena_support_check, version_consistency_check,
     config_drift_check  
 )
 
 # --- Baseline Metadata ---
-PROJECT_VERSION = "1.3.0"
+PROJECT_VERSION = "1.4.0"
 GEN_DATE = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 db_path = "aerospike_health.db"
 
-# --- Execute Ruleset ---
+# --- 1. Summary Stats Logic ---
+cluster_display = "Unnamed Cluster"
+server_version = "Unknown"
+node_count = 0
+active_features = "KVS"
+
+if os.path.exists(db_path):
+    conn = sqlite3.connect(db_path)
+    try:
+        # Global Metadata
+        meta_df = pd.read_sql_query("SELECT * FROM cluster_metadata", conn)
+        metadata = dict(zip(meta_df['key'], meta_df['value']))
+        
+        cluster_display = metadata.get('cluster_name', "Unnamed Cluster")
+        server_version = metadata.get('server_version', "Unknown")
+        
+        # Node Count
+        node_res = pd.read_sql_query("SELECT COUNT(DISTINCT node_id) as count FROM node_stats", conn)
+        node_count = node_res['count'].iloc[0] if not node_res.empty else 0
+
+        # Feature Discovery (7.x Robust)
+        features_df = pd.read_sql_query("SELECT DISTINCT feature FROM active_features", conn)
+        # Sort them to keep the report consistent
+        feature_list = sorted(features_df['feature'].tolist())
+        active_features = ", ".join(feature_list) if feature_list else "not found"
+
+    except Exception:
+        pass
+    finally:
+        conn.close()
+
+# --- 2. Execute Ruleset ---
 results = [
     hot_key_check.run_check(db_path),
     service_error_skew_check.run_check(db_path),
@@ -56,33 +80,37 @@ results = [
     version_consistency_check.run_check(db_path),
     config_drift_check.run_check(db_path)
 ]
-
-# Summary Stats Logic
-conn = sqlite3.connect(db_path)
-try:
-    dnf_query = "SELECT SUM(value) as total FROM namespace_stats WHERE metric = 'service.client_delete_not_found'"
-    dnf_result = pd.read_sql_query(dnf_query, conn)
-    dnf_val = dnf_result['total'].iloc[0] if not dnf_result.empty else 0
-    
-    node_query = "SELECT COUNT(DISTINCT node_id) as count FROM node_stats"
-    node_count = pd.read_sql_query(node_query, conn)['count'].iloc[0]
-except Exception as e:
-    dnf_val = 0
-    node_count = 0
-finally:
-    conn.close()
-
-formatted_dnf = "{:,}".format(int(dnf_val)) if dnf_val else "0"
 ```
+
+```{python}
+#| label: dynamic-header
+#| echo: false
+#| output: asis
+
+header_md = f"""
+# Aerospike Cluster Health Assessment
+
+This report provides a technical analysis of the **{cluster_display}** cluster.
+
+| System Attribute | Value |
+| :--- | :--- |
+| **Server Version** | {server_version} |
+| **Node Count** | {int(node_count)} Nodes |
+| **Active Features** | {active_features} |
+
+---
 
 # Executive Summary
 
-This report provides a health assessment for the Aerospike cluster consisting of `{python} int(node_count)` nodes. Analysis identified **`{python} formatted_dnf`** "Delete Not Found" events, suggesting application-side logic gaps.
+This diagnostic evaluates the current state of the **{cluster_display}** environment. Findings are prioritized by impact on cluster stability.
 
-::: {.callout-note}
-## TAM Overview
-The cluster is stable, but high DNF rates indicate unnecessary IOPS pressure. Reviewing application "blind delete" patterns is the primary recommendation.
+::: {{.callout-note}}
+## TAM Assessment Scope
+Findings are based on a point-in-time snapshot. Remediation should be tested in a staging environment before production deployment.
 :::
+"""
+display(Markdown(header_md))
+```
 
 ## Cluster Status Overview
 ```{python}
@@ -91,57 +119,48 @@ The cluster is stable, but high DNF rates indicate unnecessary IOPS pressure. Re
 #| output: asis
 
 for res in results:
-    if res['status'] in ['CRITICAL', 'WARNING', '⚠️ DATA MISSING']:
+    if res['status'] in ['CRITICAL', 'WARNING']:
         status_style = "danger" if res['status'] == "CRITICAL" else "warning"
-        print(f"::: {{.callout-{status_style}}}")
-        print(f"## {res['name']}")
-        print(f"{res['message']}")
-        print(":::\n")
+        display(Markdown(f"::: {{.callout-{status_style}}}\n## {res['name']}\n{res['message']}\n:::\n"))
 ```
 
 # Performance and Utilization
 
 ## Disk Usage % by Node
-
 ```{python}
 #| label: disk-chart
 #| echo: false
-conn = sqlite3.connect(db_path)
+if os.path.exists(db_path):
+    conn = sqlite3.connect(db_path)
+    query = """
+        SELECT node_id, namespace, MAX(value) as used_pct 
+        FROM namespace_stats 
+        WHERE metric = 'service.data_used_pct' 
+        GROUP BY node_id, namespace
+    """
+    df_disk = pd.read_sql_query(query, conn)
+    conn.close()
 
-query = """
-    SELECT node_id, namespace, MAX(value) as used_pct 
-    FROM namespace_stats 
-    WHERE metric = 'service.data_used_pct' 
-    GROUP BY node_id, namespace
-"""
-
-df_disk = pd.read_sql_query(query, conn)
-conn.close()
-
-if not df_disk.empty:
-    fig = px.bar(df_disk, 
-                 x="node_id", 
-                 y="used_pct", 
-                 color="namespace",
-                 barmode="group",
-                 title="Disk Usage % by Node")
-
-    fig.update_layout(xaxis_tickangle=-45)
-    fig.add_hline(y=60, line_dash="dot", line_color="red", annotation_text="HWM (60%)")
-    fig.show()
+    if not df_disk.empty:
+        fig = px.bar(df_disk, x="node_id", y="used_pct", color="namespace", barmode="group", title="Disk Usage % by Node")
+        fig.update_layout(xaxis_tickangle=-45)
+        fig.add_hline(y=60, line_dash="dot", line_color="red", annotation_text="HWM (60%)")
+        fig.show()
 ```
 
 ## Client Connections
 ```{python}
 #| label: connections-chart
 #| echo: false
-conn = sqlite3.connect(db_path)
-query = "SELECT node_id, value FROM node_stats WHERE metric = 'service.client_connections'"
-df = pd.read_sql_query(query, conn)
-conn.close()
-if not df.empty:
-    fig = px.bar(df, x='node_id', y='value', title="Client Connections by Node")
-    fig.show()
+if os.path.exists(db_path):
+    conn = sqlite3.connect(db_path)
+    # Using the service. prefix created by our 7.x modular ingestor
+    query = "SELECT node_id, value FROM node_stats WHERE metric = 'service.client_connections'"
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    if not df.empty:
+        fig = px.bar(df, x='node_id', y='value', title="Client Connections by Node", color_discrete_sequence=['teal'])
+        fig.show()
 ```
 
 # Observations and Remediation
@@ -151,31 +170,14 @@ if not df.empty:
 #| echo: false
 #| results: asis
 
-from IPython.display import display, Markdown
-
-# Filter for only actionable items
 actionable = [res for res in results if res['status'] != "PASS"]
 
 if not actionable:
-    display(Markdown("\n\n> ✅ **All checks passed.** No critical issues detected in this snapshot.\n"))
+    display(Markdown("\n\n> ✅ **All checks passed.** No critical issues detected.\n"))
 else:
-    # Sort actionable items by ID (e.g., 1.a, 1.b, 2.a...)
-    actionable_sorted = sorted(actionable, key=lambda x: x.get('id', '??'))
-    
-    md_output = ""
-    for res in actionable_sorted:
-        rule_id = res.get('id', '??')
-        rule_name = res.get('name', 'Unknown Check')
-        
-        # Priority: rule-specific remediation -> generic remediation -> fallback
-        remediation = res.get('remediation') or res.get('finding') or "Review cluster telemetry and application logs for further investigation."
-        
-        md_output += f"### {rule_id}: {rule_name}\n\n"
-        md_output += f"{res['message']}\n\n"
-        md_output += f"**Recommendation:** {remediation}\n\n"
-        md_output += "---\n\n"
-    
-    display(Markdown(md_output))
+    for res in sorted(actionable, key=lambda x: x.get('id', '??')):
+        remediation = res.get('remediation') or res.get('finding') or "Review telemetry."
+        display(Markdown(f"### {res.get('id', '??')}: {res['name']}\n\n{res['message']}\n\n**Recommendation:** {remediation}\n\n---\n\n"))
 ```
 
 # Appendix: All Tests Performed
@@ -184,46 +186,14 @@ else:
 #| label: test-table
 #| echo: false
 
-import pandas as pd
-from IPython.display import display, HTML
-
-# Sort all results (including PASS) by ID
-results_sorted = sorted(results, key=lambda x: x.get('id', '??'))
-
 table_data = []
-for res in results_sorted:
-    display_name = f"{res.get('id', '??')}: {res.get('name', 'Unknown')}"
-    
-    if res['status'] == "PASS":
-        status_icon = "✅"
-    elif res['status'] == "CRITICAL":
-        status_icon = "❌"
-    else:
-        status_icon = "⚠️"
-        
-    status_html = f"{status_icon} {res['status']}"
-    
-    table_data.append({
-        "Check Name": display_name,
-        "Status": status_html
-    })
+for res in sorted(results, key=lambda x: x.get('id', '??')):
+    status_icon = "✅" if res['status'] == "PASS" else "❌" if res['status'] == "CRITICAL" else "⚠️"
+    table_data.append({"Check Name": f"{res.get('id', '??')}: {res['name']}", "Status": f"{status_icon} {res['status']}"})
 
-df_app = pd.DataFrame(table_data)
-display(HTML(df_app.to_html(index=False, escape=False, classes='table table-hover')))
+display(HTML(pd.DataFrame(table_data).to_html(index=False, escape=False, classes='table table-hover')))
 ```
 
-# TAM Technical Details
-
-### Node Statistics (Sample)
-```{python}
-#| label: node-stats-table
-#| echo: false
-conn = sqlite3.connect(db_path)
-df = pd.read_sql_query("SELECT node_id, metric, value FROM node_stats ORDER BY RANDOM() LIMIT 10", conn)
-conn.close()
-from IPython.display import display, HTML
-display(HTML(df.to_html(index=False, classes='table table-striped')))
-```
 ---
 
 ::: {style="text-align: center; font-size: 0.8em; color: gray;"}

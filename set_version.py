@@ -3,8 +3,8 @@ import re
 from datetime import datetime
 
 # --- CONFIGURATION ---
-NEW_VERSION = "1.3.0"
-TARGET_DIRS = [".", "rules", "ingest"] # Root, rules folder, and ingest folder
+NEW_VERSION = "1.4.0"
+TARGET_DIRS = [".", "rules", "ingest"] 
 DATE_STR = datetime.now().strftime("%Y-%m-%d")
 
 def update_python_files(directory):
@@ -25,16 +25,16 @@ def update_python_files(directory):
             print(f"✅ Updated Version: {path}")
 
 def update_markdown_and_qmd():
-    # Update report.qmd
+    # 1. Update report.qmd
     if os.path.exists("report.qmd"):
         with open("report.qmd", 'r') as f:
             content = f.read()
-        content = re.sub(r'PROJECT_VERSION\s*=\s*".*?"', f'PROJECT_VERSION = "{NEW_VERSION}"', content)
+        content = re.sub(r'PROJECT_VERSION\s*=\s*["\'].*?["\']', f'PROJECT_VERSION = "{NEW_VERSION}"', content)
         with open("report.qmd", 'w') as f:
             f.write(content)
         print("✅ Updated Version: report.qmd")
 
-    # Update CATALOG.md (Both Version and Date)
+    # 2. Update CATALOG.md
     if os.path.exists("CATALOG.md"):
         with open("CATALOG.md", 'r') as f:
             content = f.read()
@@ -43,6 +43,27 @@ def update_markdown_and_qmd():
         with open("CATALOG.md", 'w') as f:
             f.write(content)
         print("✅ Updated Version & Date: CATALOG.md")
+
+    # 3. Update README.md
+    if os.path.exists("README.md"):
+        with open("README.md", 'r') as f:
+            content = f.read()
+        
+        # Pattern 1: Title # Aerospike Health Analyzer (vX.X.X)
+        content = re.sub(r'# Aerospike Health Analyzer \(v.*?\)', 
+                         f'# Aerospike Health Analyzer (v{NEW_VERSION})', content)
+        
+        # Pattern 2: Usage Header ## Usage (vX.X.X)
+        content = re.sub(r'## Usage \(v.*?\)', 
+                         f'## Usage (v{NEW_VERSION})', content)
+        
+        # Pattern 3: Footer Version X.X.X | YYYY-MM-DD
+        content = re.sub(r'Version \d+\.\d+\.\d+', f'Version {NEW_VERSION}', content)
+        content = re.sub(r'\| \d{4}-\d{2}-\d{2}', f'| {DATE_STR}', content)
+        
+        with open("README.md", 'w') as f:
+            f.write(content)
+        print("✅ Updated Version & Date: README.md")
 
 if __name__ == "__main__":
     print(f"🚀 Starting Global Version Sync to v{NEW_VERSION}...")

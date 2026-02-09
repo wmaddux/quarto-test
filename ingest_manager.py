@@ -1,22 +1,21 @@
+__version__ = "1.4.0"
 #!/usr/bin/env python3
 import sqlite3
 import tarfile
 import json
-import gzip
-import zipfile
-import io
 import os
 import sys
+import datetime
+import io
+import gzip
+import zipfile
 
-# Incremented for v1.3.0
-__version__ = "1.3.0"
-
-import ingest.node_stats_ingest_ci as node_stats
-import ingest.namespace_stats_ingest_ci as ns_stats
-import ingest.config_ingest_ci as config_ingest
-import ingest.system_info_ingest_ci as sys_ingest
+# ONLY import the registry from the package. 
+# Do NOT import individual classes here or re-define INGESTORS.
+from ingest import INGESTORS 
 
 def get_json_content(tar, member):
+    # ... (Keep existing implementation)
     f_bytes = tar.extractfile(member).read()
     if member.name.endswith('.zip'):
         with zipfile.ZipFile(io.BytesIO(f_bytes)) as z:
@@ -26,58 +25,41 @@ def get_json_content(tar, member):
     return json.loads(f_bytes.decode('utf-8'))
 
 def process_collectinfo(input_path, db_path="aerospike_health.db"):
-    # Clear old data to prevent stacked/doubled bars in the report
+    # ... (Keep existing setup logic)
     if os.path.exists(db_path):
         os.remove(db_path)
-        print(f"🧹 Database cleared: {db_path} for fresh v1.3.0 ingestion.")
-            
-    print(f"🚀 Processing v{__version__}: {input_path}")
+    
     conn = sqlite3.connect(db_path)
-        
-    try:
-        with tarfile.open(input_path, "r:*") as tar:
-            target = next((m for m in tar.getmembers() if "ascinfo.json" in m.name), None)
-            if not target:
-                print("❌ No ascinfo.json found.")
-                return
-            data = get_json_content(tar, target)
-    except Exception as e:
-        print(f"💥 Extraction Error: {e}")
-        return
+    cursor = conn.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS cluster_metadata (key TEXT PRIMARY KEY, value TEXT)")
+    
+    run_id = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    with tarfile.open(input_path, "r:*") as tar:
+        target = next((m for m in tar.getmembers() if "ascinfo.json" in m.name), None)
+        data = get_json_content(tar, target)
 
-    # Aerospike JSON hierarchy: Timestamp -> Cluster -> Node -> (as_stat, sys_stat)
     for timestamp, clusters in data.items():
         for cluster_name, nodes in clusters.items():
+            cursor.execute("INSERT OR REPLACE INTO cluster_metadata VALUES (?, ?)", ("cluster_name", cluster_name))
+            
             for node_id, node_data in nodes.items():
+                print(f"\n🔍 Inspecting Node: {node_id}")
                 
-                # Aerospike specific statistics
+                # 1. Capture Global Version Metadata
                 as_stat = node_data.get('as_stat', {})
-                # OS/Hardware level statistics (where ENA info resides)
-                sys_stat = node_data.get('sys_stat', {})
-                
-                print(f"DEBUG: Processing Node {node_id}")
+                asd_build = as_stat.get('meta_data', {}).get('asd_build')
+                if asd_build:
+                    cursor.execute("INSERT OR REPLACE INTO cluster_metadata VALUES (?, ?)", 
+                                   ("server_version", f"E-{asd_build}"))
 
-                # 1. Ingest standard Aerospike metrics
-                if as_stat:
-                    node_stats.run_ingest(node_id, as_stat, conn, timestamp)
-                    ns_stats.run_ingest(node_id, as_stat, conn, timestamp)
-                    config_ingest.run_ingest(node_id, as_stat, conn, timestamp)
-                else:
-                    print(f"⚠️ No as_stat for {node_id}")
-
-                # 2. Ingest System/Network data for Rule 1.b (ENA Check)
-                if sys_stat:
-                    sys_ingest.run_ingest(node_id, sys_stat, conn, timestamp)
-                else:
-                    print(f"⚠️ No sys_stat for {node_id}")
+                # 2. Run Plugins (This now uses the correct 5-item list)
+                for ingestor in INGESTORS:
+                    try:
+                        ingestor.run_ingest(node_id, node_data, conn, run_id)
+                    except Exception as e:
+                        print(f"⚠️ {ingestor.name} failed: {e}")
 
     conn.commit()
     conn.close()
-    print(f"✅ Ingestion complete. Database v{__version__} ready.")
-
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        process_collectinfo(sys.argv[1])
-    else:
-        print(f"Aerospike Health Ingestor v{__version__}")
-        print("Usage: ./ingest_manager.py <bundle.tgz>")
+    print("✅ Ingestion modularly completed.")

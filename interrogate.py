@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import tarfile, json, gzip, zipfile, io, sys, os
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 
 def get_content(tar, member):
     """Extracts and handles nested zip/gzip decompression."""

@@ -1,0 +1,156 @@
+[
+  {
+    "objectID": "report.html",
+    "href": "report.html",
+    "title": "Aerospike Health and Performance Report",
+    "section": "",
+    "text": "This report provides a technical analysis of the common-aerospike_va7prod cluster.\n\n\n\n\n\n\n\nSystem Attribute\nValue\n\n\n\n\nServer Version\nE-7.2.0.6\n\n\nNode Count\n3 Nodes\n\n\nActive Features\nBatch, Index-on-flash, KVS, PIndex Query, Rack-aware, SIndex Query, Security, UDF, XDR"
+  },
+  {
+    "objectID": "report.html#cluster-status-overview",
+    "href": "report.html#cluster-status-overview",
+    "title": "Aerospike Health and Performance Report",
+    "section": "Cluster Status Overview",
+    "text": "Cluster Status Overview\n\n\n\n\n\n\n\nWarningConfig Symmetry\n\n\n\nDetected 31 configuration drifts across the cluster.\n\n\n\n\n\n\n\n\nWarningDelete Not Found\n\n\n\nDetected 734,214,682 ‘Delete Not Found’ events across 3 nodes."
+  },
+  {
+    "objectID": "report.html#disk-usage-by-node",
+    "href": "report.html#disk-usage-by-node",
+    "title": "Aerospike Health and Performance Report",
+    "section": "Disk Usage % by Node",
+    "text": "Disk Usage % by Node"
+  },
+  {
+    "objectID": "report.html#client-connections",
+    "href": "report.html#client-connections",
+    "title": "Aerospike Health and Performance Report",
+    "section": "Client Connections",
+    "text": "Client Connections"
+  },
+  {
+    "objectID": "catalog.html",
+    "href": "catalog.html",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.2.0)",
+    "section": "",
+    "text": "This catalog tracks the health check logic implemented in the analyzer. Status is updated based on the current baseline.\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n1.a\nService Error Skew\nservice_error_skew_check.py\n✅ Implemented\nChecks for uneven distribution of errors across nodes.\n\n\n1.b\nENA Support Check\n—\n❌ Not Implemented\nValidates Enhanced Networking is enabled for AWS instances.\n\n\n1.c\nVersion Consistency\n—\n❌ Not Implemented\nEnsures all nodes are running the same Aerospike version.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n2.a\nSecondary Index Flash\nsindex_on_flash_check.py\n✅ Implemented\nChecks if Sindex is optimized when stored on Flash.\n\n\n2.b\nSprig Limit Warning\nsprig_limit_check.py\n✅ Implemented\nMonitors if Primary Index sprigs are nearing the 7.2 limits.\n\n\n2.c\nStorage Deadlock Check\nstorage_deadlock_check.py\n✅ Implemented\nAudits HWM vs Defrag settings to prevent write-blocks.\n\n\n2.d\nDisk HWM Check\nhwm_check.py\n🛠️ In Progress\nMonitors service.data_used_pct against 60% threshold.\n\n\n2.e\nMemory HWM Check\nmemory_hwm_check.py\n🛠️ In Progress\nMonitors service.memory_free_pct against 20% threshold.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n3.a\nCross-Node Symmetry\nconfig_symmetry_check.py\n✅ Implemented\nIdentifies mismatched configurations across the cluster.\n\n\n3.b\nConfig Drift\n—\n❌ Not Implemented\nCompares live runtime configs against static file configs.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n4.a\nHot Key Detection\nhot_key_check.py\n✅ Implemented\nDetects “Key Busy” errors indicating high-contention keys.\n\n\n4.b\nRead Not Found Rate\nread_not_found_check.py\n✅ Implemented\nFlags high rates of logical read misses.\n\n\n4.c\nDelete Not Found Rate\ndelete_not_found_check.py\n✅ Implemented\nFlags high rates of logical delete errors.\n\n\n4.d\nBatch-Index Success\n—\n❌ Not Implemented\nAudits batch-index sub-transaction success rates.\n\n\n4.e\nPI Query Latency\n—\n❌ Not Implemented\nMonitors Primary Index query performance.\n\n\n4.f\nSet Object Skew\n—\n❌ Not Implemented\nChecks for uneven data distribution at the set level.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n5.a\nLicense Usage\n—\n❌ Not Implemented\nMonitors throughput/storage against license limits.\n\n\n5.b\nSizing Capability\n—\n❌ Not Implemented\nProjecting growth based on current ingestion rates.\n\n\n\n\nBaseline: v1.2.0 Last Updated: 2026-02-06"
+  },
+  {
+    "objectID": "catalog.html#node-cluster-health",
+    "href": "catalog.html#node-cluster-health",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.2.0)",
+    "section": "",
+    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n1.a\nService Error Skew\nservice_error_skew_check.py\n✅ Implemented\nChecks for uneven distribution of errors across nodes.\n\n\n1.b\nENA Support Check\n—\n❌ Not Implemented\nValidates Enhanced Networking is enabled for AWS instances.\n\n\n1.c\nVersion Consistency\n—\n❌ Not Implemented\nEnsures all nodes are running the same Aerospike version."
+  },
+  {
+    "objectID": "catalog.html#storage-capacity",
+    "href": "catalog.html#storage-capacity",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.2.0)",
+    "section": "",
+    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n2.a\nSecondary Index Flash\nsindex_on_flash_check.py\n✅ Implemented\nChecks if Sindex is optimized when stored on Flash.\n\n\n2.b\nSprig Limit Warning\nsprig_limit_check.py\n✅ Implemented\nMonitors if Primary Index sprigs are nearing the 7.2 limits.\n\n\n2.c\nStorage Deadlock Check\nstorage_deadlock_check.py\n✅ Implemented\nAudits HWM vs Defrag settings to prevent write-blocks.\n\n\n2.d\nDisk HWM Check\nhwm_check.py\n🛠️ In Progress\nMonitors service.data_used_pct against 60% threshold.\n\n\n2.e\nMemory HWM Check\nmemory_hwm_check.py\n🛠️ In Progress\nMonitors service.memory_free_pct against 20% threshold."
+  },
+  {
+    "objectID": "catalog.html#configuration-consistency",
+    "href": "catalog.html#configuration-consistency",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.2.0)",
+    "section": "",
+    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n3.a\nCross-Node Symmetry\nconfig_symmetry_check.py\n✅ Implemented\nIdentifies mismatched configurations across the cluster.\n\n\n3.b\nConfig Drift\n—\n❌ Not Implemented\nCompares live runtime configs against static file configs."
+  },
+  {
+    "objectID": "catalog.html#performance-traffic",
+    "href": "catalog.html#performance-traffic",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.2.0)",
+    "section": "",
+    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n4.a\nHot Key Detection\nhot_key_check.py\n✅ Implemented\nDetects “Key Busy” errors indicating high-contention keys.\n\n\n4.b\nRead Not Found Rate\nread_not_found_check.py\n✅ Implemented\nFlags high rates of logical read misses.\n\n\n4.c\nDelete Not Found Rate\ndelete_not_found_check.py\n✅ Implemented\nFlags high rates of logical delete errors.\n\n\n4.d\nBatch-Index Success\n—\n❌ Not Implemented\nAudits batch-index sub-transaction success rates.\n\n\n4.e\nPI Query Latency\n—\n❌ Not Implemented\nMonitors Primary Index query performance.\n\n\n4.f\nSet Object Skew\n—\n❌ Not Implemented\nChecks for uneven data distribution at the set level."
+  },
+  {
+    "objectID": "catalog.html#sizing-licensing",
+    "href": "catalog.html#sizing-licensing",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.2.0)",
+    "section": "",
+    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n5.a\nLicense Usage\n—\n❌ Not Implemented\nMonitors throughput/storage against license limits.\n\n\n5.b\nSizing Capability\n—\n❌ Not Implemented\nProjecting growth based on current ingestion rates.\n\n\n\n\nBaseline: v1.2.0 Last Updated: 2026-02-06"
+  },
+  {
+    "objectID": "CATALOG.html",
+    "href": "CATALOG.html",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)",
+    "section": "",
+    "text": "This catalog tracks the health check logic implemented in the analyzer. Status is updated based on the current baseline.\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n1.a\nService Error Skew\nservice_error_skew_check.py\n✅ Implemented\nChecks for uneven distribution of errors across nodes.\n\n\n1.b\nENA Support Check\nena_support_check.py\n✅ Implemented\nValidates ENA for AWS or provides guidance if telemetry is missing.\n\n\n1.c\nVersion Consistency\nversion_consistency_check.py\n✅ Implemented\nEnsures all nodes are running the same Aerospike build/version.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n2.a\nSecondary Index Flash\nsindex_on_flash_check.py\n✅ Implemented\nChecks if Sindex is optimized when stored on Flash.\n\n\n2.b\nSprig Limit Warning\nsprig_limit_check.py\n✅ Implemented\nMonitors if Primary Index sprigs are nearing the 7.2 limits.\n\n\n2.c\nStorage Deadlock Check\nstorage_deadlock_check.py\n✅ Implemented\nAudits HWM vs Defrag settings to prevent write-blocks.\n\n\n2.d\nDisk HWM Check\nhwm_check.py\n✅ Implemented\nMonitors service.data_used_pct against 60% threshold.\n\n\n2.e\nMemory HWM Check\nmemory_hwm_check.py\n✅ Implemented\nMonitors service.system_free_mem_pct against 20% threshold.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n3.a\nCross-Node Symmetry\nconfig_symmetry_check.py\n✅ Implemented\nIdentifies mismatched configurations across the cluster.\n\n\n3.b\nConfig Drift\n—\n❌ Not Implemented\nCompares live runtime configs against static file configs.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n4.a\nHot Key Detection\nhot_key_check.py\n✅ Implemented\nDetects “Key Busy” errors indicating high-contention keys.\n\n\n4.b\nRead Not Found Rate\nread_not_found_check.py\n✅ Implemented\nFlags high rates of logical read misses.\n\n\n4.c\nDelete Not Found Rate\ndelete_not_found_check.py\n✅ Implemented\nFlags high rates of logical delete errors.\n\n\n4.d\nBatch-Index Success\n—\n❌ Not Implemented\nAudits batch-index sub-transaction success rates.\n\n\n4.e\nPI Query Latency\n—\n❌ Not Implemented\nMonitors Primary Index query performance.\n\n\n4.f\nSet Object Skew\n—\n❌ Not Implemented\nChecks for uneven data distribution at the set level.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n5.a\nLicense Usage\n—\n❌ Not Implemented\nMonitors throughput/storage against license limits.\n\n\n5.b\nSizing Capability\n—\n❌ Not Implemented\nProjecting growth based on current ingestion rates.\n\n\n\n\nBaseline: v1.3.0 Last Updated: 2026-02-07"
+  },
+  {
+    "objectID": "CATALOG.html#node-cluster-health",
+    "href": "CATALOG.html#node-cluster-health",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)",
+    "section": "",
+    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n1.a\nService Error Skew\nservice_error_skew_check.py\n✅ Implemented\nChecks for uneven distribution of errors across nodes.\n\n\n1.b\nENA Support Check\nena_support_check.py\n✅ Implemented\nValidates ENA for AWS or provides guidance if telemetry is missing.\n\n\n1.c\nVersion Consistency\nversion_consistency_check.py\n✅ Implemented\nEnsures all nodes are running the same Aerospike build/version."
+  },
+  {
+    "objectID": "CATALOG.html#storage-capacity",
+    "href": "CATALOG.html#storage-capacity",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)",
+    "section": "",
+    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n2.a\nSecondary Index Flash\nsindex_on_flash_check.py\n✅ Implemented\nChecks if Sindex is optimized when stored on Flash.\n\n\n2.b\nSprig Limit Warning\nsprig_limit_check.py\n✅ Implemented\nMonitors if Primary Index sprigs are nearing the 7.2 limits.\n\n\n2.c\nStorage Deadlock Check\nstorage_deadlock_check.py\n✅ Implemented\nAudits HWM vs Defrag settings to prevent write-blocks.\n\n\n2.d\nDisk HWM Check\nhwm_check.py\n✅ Implemented\nMonitors service.data_used_pct against 60% threshold.\n\n\n2.e\nMemory HWM Check\nmemory_hwm_check.py\n✅ Implemented\nMonitors service.system_free_mem_pct against 20% threshold."
+  },
+  {
+    "objectID": "CATALOG.html#configuration-consistency",
+    "href": "CATALOG.html#configuration-consistency",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)",
+    "section": "",
+    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n3.a\nCross-Node Symmetry\nconfig_symmetry_check.py\n✅ Implemented\nIdentifies mismatched configurations across the cluster.\n\n\n3.b\nConfig Drift\n—\n❌ Not Implemented\nCompares live runtime configs against static file configs."
+  },
+  {
+    "objectID": "CATALOG.html#performance-traffic",
+    "href": "CATALOG.html#performance-traffic",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)",
+    "section": "",
+    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n4.a\nHot Key Detection\nhot_key_check.py\n✅ Implemented\nDetects “Key Busy” errors indicating high-contention keys.\n\n\n4.b\nRead Not Found Rate\nread_not_found_check.py\n✅ Implemented\nFlags high rates of logical read misses.\n\n\n4.c\nDelete Not Found Rate\ndelete_not_found_check.py\n✅ Implemented\nFlags high rates of logical delete errors.\n\n\n4.d\nBatch-Index Success\n—\n❌ Not Implemented\nAudits batch-index sub-transaction success rates.\n\n\n4.e\nPI Query Latency\n—\n❌ Not Implemented\nMonitors Primary Index query performance.\n\n\n4.f\nSet Object Skew\n—\n❌ Not Implemented\nChecks for uneven data distribution at the set level."
+  },
+  {
+    "objectID": "CATALOG.html#sizing-licensing",
+    "href": "CATALOG.html#sizing-licensing",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)",
+    "section": "",
+    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n5.a\nLicense Usage\n—\n❌ Not Implemented\nMonitors throughput/storage against license limits.\n\n\n5.b\nSizing Capability\n—\n❌ Not Implemented\nProjecting growth based on current ingestion rates.\n\n\n\n\nBaseline: v1.3.0 Last Updated: 2026-02-07"
+  },
+  {
+    "objectID": "RULE-TEMPLATE.html",
+    "href": "RULE-TEMPLATE.html",
+    "title": "Aerospike Rule Template",
+    "section": "",
+    "text": "This document provides the standardized template and guidelines for contributing new health check rules to the Aerospike Health and Performance Report. Following this template ensures that your rule integrates seamlessly with the automated reporting engine.\n\n\nUse the following structure for your rule file (e.g., rules/your_check_name.py).\nimport sqlite3\nimport pandas as pd\n\n# --- Metadata ---\n# ID: {X.y} (e.g., 5.a)\n# Title: Descriptive Name\n\ndef run_check(db_path=\"aerospike_health.db\"):\n    \"\"\"\n    Executes the health check against the local SQLite database.\n    \n    Returns:\n        dict: {\n            \"id\": str,          # The unique identifier (e.g., \"5.a\")\n            \"name\": str,        # The display name of the rule\n            \"status\": str,      # PASS, WARNING, CRITICAL, or ⚠️ DATA MISSING\n            \"message\": str,     # Human-readable findings\n            \"remediation\": str  # Specific steps to resolve the issue\n        }\n    \"\"\"\n    conn = sqlite3.connect(db_path)\n    \n    try:\n        # 1. Query Logic\n        # df = pd.read_sql_query(\"SELECT ...\", conn)\n        \n        # 2. Handle Missing Data\n        # if df.empty:\n        #     return {\n        #         \"id\": \"X.y\",\n        #         \"name\": \"Rule Name\",\n        #         \"status\": \"⚠️ DATA MISSING\",\n        #         \"message\": \"Telemetry not found.\",\n        #         \"remediation\": \"Run 'asadm -e info' to collect missing metrics.\"\n        #     }\n        \n        # 3. Success Case\n        return {\n            \"id\": \"X.y\",\n            \"name\": \"Your Rule Name\",\n            \"status\": \"PASS\",\n            \"message\": \"Check completed successfully.\",\n            \"remediation\": \"None required.\"\n        }\n        \n    except Exception as e:\n        return {\n            \"id\": \"X.y\",\n            \"name\": \"Your Rule Name\",\n            \"status\": \"CRITICAL\",\n            \"message\": f\"An error occurred: {str(e)}\",\n            \"remediation\": \"Review logs and database schema.\"\n        }\n    finally:\n        conn.close()\n\n\n\n\nReturn Schema: Every rule must return a dictionary with keys: id, name, status, message, and remediation.\nError Handling: Use try...except...finally to ensure the reporting engine continues running even if a specific rule fails.\nRead-Only: Rules should only read from the database.\n\n\n\n\n\n\n\nStatus\nMeaning\n\n\n\n\nPASS\nHealthy thresholds.\n\n\nWARNING\nThreshold exceeded, but operational.\n\n\nCRITICAL\nRisk of data loss or instability.\n\n\n⚠️ DATA MISSING\nTelemetry lacks required metrics."
+  },
+  {
+    "objectID": "RULE-TEMPLATE.html#rule-python-template",
+    "href": "RULE-TEMPLATE.html#rule-python-template",
+    "title": "Aerospike Rule Template",
+    "section": "",
+    "text": "Use the following structure for your rule file (e.g., rules/your_check_name.py).\nimport sqlite3\nimport pandas as pd\n\n# --- Metadata ---\n# ID: {X.y} (e.g., 5.a)\n# Title: Descriptive Name\n\ndef run_check(db_path=\"aerospike_health.db\"):\n    \"\"\"\n    Executes the health check against the local SQLite database.\n    \n    Returns:\n        dict: {\n            \"id\": str,          # The unique identifier (e.g., \"5.a\")\n            \"name\": str,        # The display name of the rule\n            \"status\": str,      # PASS, WARNING, CRITICAL, or ⚠️ DATA MISSING\n            \"message\": str,     # Human-readable findings\n            \"remediation\": str  # Specific steps to resolve the issue\n        }\n    \"\"\"\n    conn = sqlite3.connect(db_path)\n    \n    try:\n        # 1. Query Logic\n        # df = pd.read_sql_query(\"SELECT ...\", conn)\n        \n        # 2. Handle Missing Data\n        # if df.empty:\n        #     return {\n        #         \"id\": \"X.y\",\n        #         \"name\": \"Rule Name\",\n        #         \"status\": \"⚠️ DATA MISSING\",\n        #         \"message\": \"Telemetry not found.\",\n        #         \"remediation\": \"Run 'asadm -e info' to collect missing metrics.\"\n        #     }\n        \n        # 3. Success Case\n        return {\n            \"id\": \"X.y\",\n            \"name\": \"Your Rule Name\",\n            \"status\": \"PASS\",\n            \"message\": \"Check completed successfully.\",\n            \"remediation\": \"None required.\"\n        }\n        \n    except Exception as e:\n        return {\n            \"id\": \"X.y\",\n            \"name\": \"Your Rule Name\",\n            \"status\": \"CRITICAL\",\n            \"message\": f\"An error occurred: {str(e)}\",\n            \"remediation\": \"Review logs and database schema.\"\n        }\n    finally:\n        conn.close()"
+  },
+  {
+    "objectID": "RULE-TEMPLATE.html#contribution-guidelines",
+    "href": "RULE-TEMPLATE.html#contribution-guidelines",
+    "title": "Aerospike Rule Template",
+    "section": "",
+    "text": "Return Schema: Every rule must return a dictionary with keys: id, name, status, message, and remediation.\nError Handling: Use try...except...finally to ensure the reporting engine continues running even if a specific rule fails.\nRead-Only: Rules should only read from the database."
+  },
+  {
+    "objectID": "RULE-TEMPLATE.html#status-levels",
+    "href": "RULE-TEMPLATE.html#status-levels",
+    "title": "Aerospike Rule Template",
+    "section": "",
+    "text": "Status\nMeaning\n\n\n\n\nPASS\nHealthy thresholds.\n\n\nWARNING\nThreshold exceeded, but operational.\n\n\nCRITICAL\nRisk of data loss or instability.\n\n\n⚠️ DATA MISSING\nTelemetry lacks required metrics."
+  },
+  {
+    "objectID": "report.html#tam-overview",
+    "href": "report.html#tam-overview",
+    "title": "Aerospike Health and Performance Report",
+    "section": "TAM Overview",
+    "text": "TAM Overview\nThe cluster state is derived from telemetry provided in the {bundle_display} bundle. This assessment focuses on configuration symmetry, performance outliers, and hardware support."
+  },
+  {
+    "objectID": "report.html#tam-assessment-scope",
+    "href": "report.html#tam-assessment-scope",
+    "title": "Aerospike Health and Performance Report",
+    "section": "TAM Assessment Scope",
+    "text": "TAM Assessment Scope\nThe findings below are based on a point-in-time snapshot provided in the source bundle. Remediation steps are prioritized by their impact on cluster stability and performance."
+  }
+]

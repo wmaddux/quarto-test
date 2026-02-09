@@ -15,3 +15,12 @@ env/
 .quarto/
 *_files/
 *_cache/
+
+# Collectinfo Bundles
+bundles/
+*.tgz
+*.tar
+*.gz
+
+/.quarto/
+**/*.quarto_ipynb

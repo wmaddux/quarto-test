@@ -1,34 +1,24 @@
-import sqlite3
-__version__ = "1.3.0"
+__version__ = "1.4.0"
+from ingest.base_ingestor import BaseIngestor
 
-def run_ingest(node_id, as_stat, conn, run_id):
-    cursor = conn.cursor()
-    # Ensure table exists
-    cursor.execute("CREATE TABLE IF NOT EXISTS node_stats (run_id TEXT, node_id TEXT, metric TEXT, value REAL)")
-    
-    # Path: as_stat -> statistics -> service
-    service_root = as_stat.get('statistics', {}).get('service', {})
-    
-    if not isinstance(service_root, dict):
-        return
+class NodeStatsIngestor(BaseIngestor):
+    @property
+    def name(self): return "Node Stats"
 
-    count = 0
-    def flatten_and_insert(prefix, data):
-        nonlocal count
-        for key, val in data.items():
-            full_key = f"{prefix}.{key}" if prefix else key
-            if isinstance(val, dict):
-                flatten_and_insert(full_key, val)
-            else:
-                try:
-                    cursor.execute(
-                        "INSERT INTO node_stats (run_id, node_id, metric, value) VALUES (?, ?, ?, ?)",
-                        (run_id, node_id, full_key, float(val))
-                    )
-                    count += 1
-                except (ValueError, TypeError):
-                    continue
-
-    flatten_and_insert("service", service_root)
-    conn.commit()
-    print(f"✅ Node Stats: Ingested {count} metrics for {node_id}")
+    def run_ingest(self, node_id, node_data, conn, run_id):
+        as_stat = node_data.get('as_stat', {})
+        service_stats = as_stat.get('statistics', {}).get('service', as_stat)
+        
+        cursor = conn.cursor()
+        # Added 'source' column
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS node_stats 
+            (run_id TEXT, node_id TEXT, metric TEXT, value REAL, source TEXT)
+        """)
+        
+        for metric, value in service_stats.items():
+            if isinstance(value, (int, float, str)) and str(value).replace('.','',1).isdigit():
+                m_name = f"service.{metric}" if not metric.startswith('service.') else metric
+                cursor.execute("INSERT INTO node_stats VALUES (?, ?, ?, ?, ?)", 
+                               (run_id, node_id, m_name, float(value), 'statistics'))
+        print(f"✅ {self.name} processed for {node_id}")
