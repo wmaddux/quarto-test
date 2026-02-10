@@ -24,7 +24,7 @@ from rules import (
     hot_key_check, service_error_skew_check, sindex_on_flash_check,
     sprig_limit_check, storage_deadlock_check, config_symmetry_check,
     read_not_found_check, delete_not_found_check, hwm_check,
-    memory_hwm_check, ena_support_check, version_consistency_check,
+    memory_hwm_check, network_acceleration_check, version_consistency_check,
     config_drift_check  
 )
 
@@ -33,11 +33,12 @@ PROJECT_VERSION = "1.4.0"
 GEN_DATE = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 db_path = "aerospike_health.db"
 
-# --- 1. Summary Stats Logic ---
+# --- 1. Data Retrieval & Metadata ---
 cluster_display = "Unnamed Cluster"
 server_version = "Unknown"
 node_count = 0
-active_features = "KVS"
+feature_list = []
+active_features_str = "None detected"
 
 if os.path.exists(db_path):
     conn = sqlite3.connect(db_path)
@@ -46,6 +47,8 @@ if os.path.exists(db_path):
         meta_df = pd.read_sql_query("SELECT * FROM cluster_metadata", conn)
         metadata = dict(zip(meta_df['key'], meta_df['value']))
         
+        cloud_platform = metadata.get('cloud_platform', "Unknown")
+
         cluster_display = metadata.get('cluster_name', "Unnamed Cluster")
         server_version = metadata.get('server_version', "Unknown")
         
@@ -53,11 +56,10 @@ if os.path.exists(db_path):
         node_res = pd.read_sql_query("SELECT COUNT(DISTINCT node_id) as count FROM node_stats", conn)
         node_count = node_res['count'].iloc[0] if not node_res.empty else 0
 
-        # Feature Discovery (7.x Robust)
+        # Feature Discovery
         features_df = pd.read_sql_query("SELECT DISTINCT feature FROM active_features", conn)
-        # Sort them to keep the report consistent
         feature_list = sorted(features_df['feature'].tolist())
-        active_features = ", ".join(feature_list) if feature_list else "not found"
+        active_features_str = ", ".join(feature_list) if feature_list else "None detected"
 
     except Exception:
         pass
@@ -76,39 +78,77 @@ results = [
     delete_not_found_check.run_check(db_path),
     hwm_check.run_check(db_path),
     memory_hwm_check.run_check(db_path),
-    ena_support_check.run_check(db_path),        
+    network_acceleration_check.run_check(db_path),        
     version_consistency_check.run_check(db_path),
     config_drift_check.run_check(db_path)
 ]
+
+# --- 3. Dynamic Narrative Generation ---
+
+# A. Calculate Severity
+crit_count = len([r for r in results if r['status'] == 'CRITICAL'])
+warn_count = len([r for r in results if r['status'] == 'WARNING'])
+
+# B. Cluster Assessment Narrative
+if crit_count > 0:
+    cluster_assessment = f"⚠️ This cluster requires **immediate intervention**. {crit_count} critical issues were detected that may impact data durability or service availability."
+elif warn_count > 3:
+    cluster_assessment = f"⚡ The cluster is stable but showing signs of **configuration drift or resource pressure**. {warn_count} warnings suggest optimization is required."
+else:
+    cluster_assessment = "✅ The cluster is currently **healthy and operating within optimal parameters**. No significant deviations from Aerospike best practices were identified."
+
+# C. Executive Summary Narrative
+is_sc = "SC" in feature_list
+mode_suffix = "Strong Consistency (SC) deployment" if is_sc else "Available/Partition-tolerant (AP) deployment"
+
+summary_narrative = (
+    f"This diagnostic evaluates the **{cluster_display}** environment, currently running Aerospike **{server_version}** "
+    f"across a **{node_count}-node** footprint. Optimized as a **{mode_suffix}**, the findings below prioritize "
+    f"{'partition safety and transaction integrity' if is_sc else 'throughput efficiency and resource headroom'}."
+)
+
+if "XDR" in feature_list:
+    summary_narrative += " Cross-Datacenter Replication (XDR) is active, adding requirements for inter-cluster bandwidth monitoring."
+
+if crit_count > 0:
+    summary_narrative += " **Action Required:** Immediate focus should be placed on remediating the critical failures identified in the primary findings."
 ```
 
 ```{python}
 #| label: dynamic-header
 #| echo: false
-#| output: asis
 
 header_md = f"""
 # Aerospike Cluster Health Assessment
 
-This report provides a technical analysis of the **{cluster_display}** cluster.
-
-| System Attribute | Value |
-| :--- | :--- |
-| **Server Version** | {server_version} |
-| **Node Count** | {int(node_count)} Nodes |
-| **Active Features** | {active_features} |
+{cluster_assessment}
 
 ---
 
-# Executive Summary
+## Executive Summary
 
-This diagnostic evaluates the current state of the **{cluster_display}** environment. Findings are prioritized by impact on cluster stability.
+{summary_narrative}
+
+### Cluster Context
+| Metadata | Value |
+| :--- | :--- |
+| **Cluster Name** | {cluster_display} |
+| **Server Version** | {server_version} |
+| **Cloud Platform** | {cloud_platform} |
+| **Node Count** | {node_count} |
+| **Active Features** | {active_features_str} |
+
+::: {{.callout-note collapse="true"}}
+## Why this context matters
+The active features detected (such as SC, Rack-awareness, or XDR) fundamentally change how Aerospike handles data distribution and consistency. This report tailors its health checks based on the specific architectural flags identified during ingestion.
+:::
 
 ::: {{.callout-note}}
 ## TAM Assessment Scope
 Findings are based on a point-in-time snapshot. Remediation should be tested in a staging environment before production deployment.
 :::
 """
+
 display(Markdown(header_md))
 ```
 
