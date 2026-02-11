@@ -1,49 +1,32 @@
-# Aerospike Health Analyzer (v1.4.0)
+# Aerospike Health Analyzer (v1.4.1)
 
-A modular diagnostic orchestration tool designed to ingest Aerospike telemetry into a structured SQLite database, execute health-check rules, and generate professional HTML reports via Quarto.
+A professional diagnostic suite designed for Aerospike 7.2+ environments. This tool ingests `collectinfo` bundles into a localized SQLite database and executes a comprehensive ruleset to identify performance bottlenecks, configuration drift, and hardware risks.
+
+## Usage (v1.4.1)
+
+### 1. Ingest Telemetry
+Process a standard Aerospike `collectinfo` bundle into the analyzer's database:
+BACKTICKSbash
+python3 run_ingest.py --bundle bundles/your-collectinfo.tgz
+BACKTICKS
+
+### 2. Validate Environment
+(Optional but recommended) Run the integrity check to verify rule signatures and schema:
+BACKTICKSbash
+python3 check_integrity.py
+BACKTICKS
+
+### 3. Generate Report
+Render the high-fidelity HTML report using Quarto:
+BACKTICKSbash
+quarto render report.qmd
+BACKTICKS
+
+## Key Features
+* **Recursive Ingestion:** Modernized ingestors handle nested 7.x telemetry structures.
+* **Cloud-Aware:** Automatic detection of AWS (ENA) and Azure platforms.
+* **Proactive Forecasting:** Capacity rules predict HWM breaches based on ingestion trends.
+* **Interactive Visualizations:** Plotly-based utilization and connection charts.
 
 ---
-
-## 🚀 Application Pipeline
-
-The analyzer transforms raw telemetry into actionable insights through a three-stage lifecycle:
-
-1. **Ingestion:** Normalizes raw `ascinfo.json` data into `aerospike_health.db`.
-2. **Analysis:** Executes independent logic modules from `rules/` against the database.
-3. **Reporting:** Renders `report.qmd` into a self-contained HTML document with interactive visualizations.
-
-
-
----
-
-## 📂 Project Structure
-
-### Core Ingestion
-* **`run_ingest.py`**: The primary CLI entry point.
-* **`ingest_manager.py`**: Manages the SQLite schema and parser orchestration.
-* **`ingest/`**: Contains specialized parsers (Stats, Config, Features).
-
-### Analysis & UI
-* **`rules/`**: The logic library. Every script here identifies a specific issue (e.g., HWM Skew, Storage Deadlocks).
-* **`report.qmd`**: The Quarto template that executes rules and generates the UI.
-
----
-
-## ⚙️ Installation
-
-### Prerequisites
-* **Python 3.10+**
-* **Quarto CLI:** [Download Here](https://quarto.org/docs/get-started/)
-
-### Setup
-```bash
-# Clone the repository
-git clone [https://github.com/aerospike/health-analyzer.git](https://github.com/aerospike/health-analyzer.git)
-cd health-analyzer
-
-# Setup virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install dependencies
-pip install pandas plotly
+**Version:** 1.4.1 | **Last Updated:** 2026-02-10

@@ -40,7 +40,7 @@ from rules import (
 )
 
 # --- Baseline Metadata ---
-PROJECT_VERSION = "1.4.0"
+PROJECT_VERSION = "1.4.1"
 GEN_DATE = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 db_path = "aerospike_health.db"
 
