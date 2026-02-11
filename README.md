@@ -1,8 +1,8 @@
-# Aerospike Health Analyzer (v1.4.1)
+# Aerospike Health Analyzer (v1.5.4)
 
 A professional diagnostic suite designed for Aerospike 7.2+ environments. This tool ingests `collectinfo` bundles into a localized SQLite database and executes a comprehensive ruleset to identify performance bottlenecks, configuration drift, and hardware risks.
 
-## Usage (v1.4.1)
+## Usage (v1.5.4)
 
 ### 1. Ingest Telemetry
 Process a standard Aerospike `collectinfo` bundle into the analyzer's database:

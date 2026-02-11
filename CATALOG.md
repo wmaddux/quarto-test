@@ -43,5 +43,5 @@ This catalog defines the logic used to evaluate cluster health. It is designed t
 | **5.a** | **Capacity Forecast** | ✅ | Projected HWM breach within < 30 days based on ingestion rate. | **Why:** Proactive warning before system reaches eviction state.<br>**Action:** Increase node count or expand SSD/NVMe allocation to maintain headroom. |
 
 ---
-**Baseline:** v1.4.1
-**Last Updated:** 2026-02-10
+**Baseline:** v1.5.4
+**Last Updated:** 2026-02-11
