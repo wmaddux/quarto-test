@@ -25,13 +25,22 @@ def get_json_content(tar, member):
     return json.loads(f_bytes.decode('utf-8'))
 
 def process_collectinfo(input_path, db_path="aerospike_health.db"):
-    # ... (Keep existing setup logic)
     if os.path.exists(db_path):
         os.remove(db_path)
     
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
+    
+    # Initialize Core Tables
     cursor.execute("CREATE TABLE IF NOT EXISTS cluster_metadata (key TEXT PRIMARY KEY, value TEXT)")
+    
+    # Ensure set_stats exists at the start
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS set_stats (
+            node_id TEXT, ns TEXT, set_name TEXT, key TEXT, value TEXT, run_id TEXT,
+            PRIMARY KEY (node_id, ns, set_name, key, run_id)
+        )
+    """)
     
     run_id = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     

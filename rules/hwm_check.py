@@ -1,37 +1,84 @@
 import sqlite3
 import pandas as pd
+
+# -----------------------------------------------------------------------------
+# VERSION STAMP
+# -----------------------------------------------------------------------------
 __version__ = "1.4.0"
+
+# --- Metadata ---
+# ID: 2.d
+# Title: Disk HWM Check
 
 def run_check(db_path="aerospike_health.db"):
     conn = sqlite3.connect(db_path)
-    # 7.2 Namespace-level storage query
-    query = """
-    SELECT node_id, namespace, value 
-    FROM namespace_stats 
-    WHERE metric = 'service.data_used_pct'
-    """
-    df = pd.read_sql_query(query, conn)
-    conn.close()
+    check_id = "2.d"
+    check_name = "Disk HWM Check"
+    target_table = "namespace_stats"
+    
+    try:
+        # 1. SCHEMA SAFETY CHECK
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{target_table}'")
+        if not cursor.fetchone():
+            return {"id": check_id, "name": check_name, "status": "⚠️ DATA MISSING", "message": "Table not found."}
 
-    if df.empty:
-        return {"id": "2.d", "name": "Disk HWM Check", "status": "INFO", "message": "No disk-based storage metrics found."}
+        # 2. QUERY LOGIC
+        # We look for the maximum disk usage percentage recorded for each namespace/node
+        query = f"""
+            SELECT node_id, namespace, CAST(value AS REAL) as used_pct 
+            FROM {target_table} 
+            WHERE metric = 'service.data_used_pct'
+        """
+        df = pd.read_sql_query(query, conn)
+        
+        if df.empty:
+            return {
+                "id": check_id, "name": check_name, "status": "PASS", 
+                "message": "No disk-based namespace metrics found.",
+                "remediation": "None"
+            }
 
-    # Identify any namespace on any node exceeding 60%
-    threshold = 60
-    breach_df = df[df['value'] >= threshold]
+        # 3. ANALYSIS
+        # Standard Aerospike HWM is often 60%. We set a warning threshold here.
+        # In a perfect world, we'd pull the actual 'high-water-disk-pct' from node_configs,
+        # but 60 is the industry-standard baseline for TAM warnings.
+        warning_threshold = 60
+        critical_threshold = 75
+        
+        peak_usage = df['used_pct'].max()
+        over_threshold = df[df['used_pct'] >= warning_threshold]
 
-    if not breach_df.empty:
-        # Format a helpful message for the TAM
-        offenders = ", ".join([f"{r['namespace']}@{r['node_id']} ({r['value']}%)" for _, r in breach_df.iterrows()])
+        if not over_threshold.empty:
+            worst_case = over_threshold.sort_values(by='used_pct', ascending=False).iloc[0]
+            status = "CRITICAL" if worst_case['used_pct'] >= critical_threshold else "WARNING"
+            
+            return {
+                "id": check_id,
+                "name": check_name,
+                "status": status,
+                "message": f"Namespace '{worst_case['namespace']}' is at {int(worst_case['used_pct'])}% disk capacity on node {worst_case['node_id']}.",
+                "remediation": (
+                    f"**Why this matters:** When disk usage exceeds the High Water Mark ({warning_threshold}%), "
+                    "Aerospike begins expiring (evicting) data with a TTL. If usage continues to rise and hits "
+                    "`stop-writes-pct` (default 90%), the cluster will reject all incoming writes.\n\n"
+                    "**Action Plan:**\n"
+                    "1. Check for data skew: Run `asadm -e 'show statistics namespace'` to see if one node has more data than others.\n"
+                    "2. Verify TTLs: Ensure data has a 'Time To Live' (TTL) so eviction can reclaim space.\n"
+                    "3. Add Capacity: Consider adding nodes to the cluster or increasing SSD size if using cloud-native storage."
+                )
+            }
+
+        # EVIDENCE-BASED PASS
         return {
-            "id": "2.d", "name": "Disk HWM Check",
-            "status": "CRITICAL",
-            "message": f"High Water Mark breached (>{threshold}%): {offenders}",
-            "remediation": "Increase storage capacity or adjust TTL/eviction policies immediately."
+            "id": check_id, 
+            "name": check_name, 
+            "status": "PASS",
+            "message": f"All namespaces are healthy. Peak disk utilization is {int(peak_usage)}% (Threshold: {warning_threshold}%).",
+            "remediation": "None"
         }
-
-    return {
-        "id": "2.d", "name": "Disk HWM Check",
-        "status": "PASS",
-        "message": f"All namespaces are below the {threshold}% High Water Mark."
-    }
+        
+    except Exception as e:
+        return {"id": check_id, "name": check_name, "status": "CRITICAL", "message": f"Error: {str(e)}"}
+    finally:
+        conn.close()

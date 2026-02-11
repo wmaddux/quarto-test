@@ -1,31 +1,42 @@
 ---
 title: "Aerospike Health and Performance Report"
 author: "Aerospike TAM Team"
-date: last-modified
-format:
+format: 
   html:
-    toc: true
-    theme: cosmo
     self-contained: true
+    code-tools: false    # This removes the "Code" dropdown button
+    code-fold: false      # This ensures no code is hidden behind toggles
+execute:
+  echo: false            # This hides code for ALL cells by default
 ---
 
 ```{python}
-#| label: setup
-#| include: false
+#| output: false
 import sqlite3
 import pandas as pd
 import plotly.express as px
 import os
 import datetime
 from IPython.display import display, Markdown, HTML
+import sys
 
 # --- Import Rules ---
 from rules import (
-    hot_key_check, service_error_skew_check, sindex_on_flash_check,
-    sprig_limit_check, storage_deadlock_check, config_symmetry_check,
-    read_not_found_check, delete_not_found_check, hwm_check,
-    memory_hwm_check, network_acceleration_check, version_consistency_check,
-    config_drift_check  
+    error_skew_check, 
+    version_consistency_check,
+    network_acceleration_check,
+    deadlock_check,
+    sindex_check,
+    sprigs_check,
+    hwm_check,
+    memory_hwm_check,
+    config_symmetry_check,
+    config_drift_check,
+    hot_key_check,
+    read_not_found_check,
+    delete_not_found_check,
+    set_object_skew_check,
+    capacity_check
 )
 
 # --- Baseline Metadata ---
@@ -39,85 +50,112 @@ server_version = "Unknown"
 node_count = 0
 feature_list = []
 active_features_str = "None detected"
+cloud_platform = "Unknown"
+consistency = "Unknown"
+storage = "Unknown"
+idx_type = "Unknown"
+topology = "Unknown"
 
 if os.path.exists(db_path):
     conn = sqlite3.connect(db_path)
-    try:
-        # Global Metadata
+    try:  # Added missing try block
         meta_df = pd.read_sql_query("SELECT * FROM cluster_metadata", conn)
         metadata = dict(zip(meta_df['key'], meta_df['value']))
-        
-        cloud_platform = metadata.get('cloud_platform', "Unknown")
 
+        # Extract the config flavors
         cluster_display = metadata.get('cluster_name', "Unnamed Cluster")
+        cloud_platform = metadata.get('cloud_platform', "Unknown")
         server_version = metadata.get('server_version', "Unknown")
+        consistency = metadata.get('consistency_model', "Unknown")
+        storage = metadata.get('storage_flavor', "Unknown")
+        idx_type = metadata.get('index_flavor', "Unknown")
+        topology = metadata.get('topology', "Unknown")
         
-        # Node Count
+        # Node Count (Fixed Indentation)
         node_res = pd.read_sql_query("SELECT COUNT(DISTINCT node_id) as count FROM node_stats", conn)
         node_count = node_res['count'].iloc[0] if not node_res.empty else 0
 
-        # Feature Discovery
+        # Feature Discovery (Fixed Indentation)
         features_df = pd.read_sql_query("SELECT DISTINCT feature FROM active_features", conn)
         feature_list = sorted(features_df['feature'].tolist())
         active_features_str = ", ".join(feature_list) if feature_list else "None detected"
 
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Error during metadata retrieval: {e}")
     finally:
         conn.close()
 
 # --- 2. Execute Ruleset ---
 results = [
-    hot_key_check.run_check(db_path),
-    service_error_skew_check.run_check(db_path),
-    sindex_on_flash_check.run_check(db_path),
-    sprig_limit_check.run_check(db_path),
-    storage_deadlock_check.run_check(db_path),
-    config_symmetry_check.run_check(db_path),
-    read_not_found_check.run_check(db_path),
-    delete_not_found_check.run_check(db_path),
-    hwm_check.run_check(db_path),
-    memory_hwm_check.run_check(db_path),
-    network_acceleration_check.run_check(db_path),        
-    version_consistency_check.run_check(db_path),
-    config_drift_check.run_check(db_path)
+    error_skew_check.run_check(),
+    version_consistency_check.run_check(),
+    network_acceleration_check.run_check(),
+    deadlock_check.run_check(),
+    sindex_check.run_check(),
+    sprigs_check.run_check(),
+    hwm_check.run_check(),
+    memory_hwm_check.run_check(),
+    config_symmetry_check.run_check(),
+    config_drift_check.run_check(),
+    hot_key_check.run_check(),
+    read_not_found_check.run_check(),
+    delete_not_found_check.run_check(),
+    set_object_skew_check.run_check(),
+    capacity_check.run_check()
 ]
 
-# --- 3. Dynamic Narrative Generation ---
+# Write to stderr so it shows in the VS Code log but stays out of the HTML report
+print(f"\n--- Processed {len(results)} Rules ---", file=sys.stderr)
+for r in results:
+    print(f"[{r['status']}] {r['id']} {r['name']}: {r['message']}", file=sys.stderr)
 
-# A. Calculate Severity
+# --- 3. Dynamic Narrative Generation ---
 crit_count = len([r for r in results if r['status'] == 'CRITICAL'])
 warn_count = len([r for r in results if r['status'] == 'WARNING'])
 
-# B. Cluster Assessment Narrative
 if crit_count > 0:
-    cluster_assessment = f"⚠️ This cluster requires **immediate intervention**. {crit_count} critical issues were detected that may impact data durability or service availability."
+    cluster_assessment = f"⚠️ This cluster requires **immediate intervention**. {crit_count} critical issues were detected."
 elif warn_count > 3:
-    cluster_assessment = f"⚡ The cluster is stable but showing signs of **configuration drift or resource pressure**. {warn_count} warnings suggest optimization is required."
+    cluster_assessment = f"⚡ The cluster is stable but showing signs of **resource pressure**. {warn_count} warnings suggest optimization is required."
 else:
-    cluster_assessment = "✅ The cluster is currently **healthy and operating within optimal parameters**. No significant deviations from Aerospike best practices were identified."
+    cluster_assessment = "✅ The cluster is currently **healthy and operating within optimal parameters**."
 
-# C. Executive Summary Narrative
-is_sc = "SC" in feature_list
-mode_suffix = "Strong Consistency (SC) deployment" if is_sc else "Available/Partition-tolerant (AP) deployment"
+is_sc = "Strong Consistency" in consistency
+mode_name = "Strong Consistency (SC) deployment" if is_sc else "Available/Partition-tolerant (AP) deployment"
+priority_text = "partition safety and transaction integrity" if is_sc else "throughput efficiency and resource headroom"
 
 summary_narrative = (
     f"This diagnostic evaluates the **{cluster_display}** environment, currently running Aerospike **{server_version}** "
-    f"across a **{node_count}-node** footprint. Optimized as a **{mode_suffix}**, the findings below prioritize "
-    f"{'partition safety and transaction integrity' if is_sc else 'throughput efficiency and resource headroom'}."
+    f"across a **{node_count}-node** footprint. Optimized as an **{mode_name}**, the findings below prioritize "
+    f"{priority_text}."
 )
 
-if "XDR" in feature_list:
+if topology == "XDR Enabled":
     summary_narrative += " Cross-Datacenter Replication (XDR) is active, adding requirements for inter-cluster bandwidth monitoring."
-
-if crit_count > 0:
-    summary_narrative += " **Action Required:** Immediate focus should be placed on remediating the critical failures identified in the primary findings."
 ```
 
 ```{python}
 #| label: dynamic-header
 #| echo: false
+#| output: asis
 
+# A. Determine Consistency Mode for narrative
+is_sc = "Strong Consistency" in consistency
+mode_name = "Strong Consistency (SC) deployment" if is_sc else "Available/Partition-tolerant (AP) deployment"
+priority_text = "partition safety and transaction integrity" if is_sc else "throughput efficiency and resource headroom"
+
+# B. Build the Executive Summary
+summary_narrative = (
+    f"This diagnostic evaluates the **{cluster_display}** environment, currently running Aerospike **{server_version}** "
+    f"across a **{node_count}-node** footprint. Optimized as a **{mode_name}**, the findings below prioritize "
+    f"{priority_text}."
+)
+
+# C. Append XDR context if detected
+if topology == "XDR Enabled":
+    summary_narrative += " Cross-Datacenter Replication (XDR) is active, adding requirements for inter-cluster bandwidth monitoring."
+
+# D. Final Markdown Assembly
 header_md = f"""
 # Aerospike Cluster Health Assessment
 
@@ -130,12 +168,16 @@ header_md = f"""
 {summary_narrative}
 
 ### Cluster Context
-| Metadata | Value |
+| Attribute | Value |
 | :--- | :--- |
 | **Cluster Name** | {cluster_display} |
 | **Server Version** | {server_version} |
 | **Cloud Platform** | {cloud_platform} |
 | **Node Count** | {node_count} |
+| **Consistency Model**| {consistency} |
+| **Storage Engine** | {storage} |
+| **Index Location** | {idx_type} |
+| **Topology** | {topology} |
 | **Active Features** | {active_features_str} |
 
 ::: {{.callout-note collapse="true"}}
@@ -226,12 +268,19 @@ else:
 #| label: test-table
 #| echo: false
 
-table_data = []
+# Create a clean list for the audit table
+table_rows = []
 for res in sorted(results, key=lambda x: x.get('id', '??')):
     status_icon = "✅" if res['status'] == "PASS" else "❌" if res['status'] == "CRITICAL" else "⚠️"
-    table_data.append({"Check Name": f"{res.get('id', '??')}: {res['name']}", "Status": f"{status_icon} {res['status']}"})
+    table_rows.append({
+        "ID": res.get('id', '??'),
+        "Rule Name": res['name'],
+        "Status": f"{status_icon} {res['status']}",
+        "Evidence / Detail": res['message'] # This is the "Evidence" field
+    })
 
-display(HTML(pd.DataFrame(table_data).to_html(index=False, escape=False, classes='table table-hover')))
+# Render as a clean HTML table
+display(HTML(pd.DataFrame(table_rows).to_html(index=False, escape=False, classes='table table-striped')))
 ```
 
 ---

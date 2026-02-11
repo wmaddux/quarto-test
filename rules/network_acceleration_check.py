@@ -1,54 +1,58 @@
 import sqlite3
+import pandas as pd
 
-def run_check(db_path):
+__version__ = "1.4.0"
+
+def run_check(db_path="aerospike_health.db"):
     conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-
-    # 1. Determine Platform
-    cursor.execute("SELECT value FROM cluster_metadata WHERE key='cloud_platform'")
-    row = cursor.fetchone()
-    platform = row[0] if row else "Unknown"
-
-    # 2. Defensive Table Check: Check if system_info table even exists
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='system_info';")
-    table_exists = cursor.fetchone()
-
-    has_sys_data = False
-    if table_exists:
-        cursor.execute("SELECT COUNT(*) FROM system_info")
-        has_sys_data = cursor.fetchone()[0] > 0
-
-    conn.close()
-
     check_id = "1.b"
-    name = "Network Acceleration Check"
+    check_name = "Network Acceleration Check"
+    target_table = "sys_stats"
     
-    # Map platform to expected technology
-    tech_map = {
-        "AWS": "ENA (Elastic Network Adapter)",
-        "Azure": "Accelerated Networking (Mellanox/SR-IOV)",
-        "GCP": "gVNIC"
-    }
-    tech = tech_map.get(platform, "High-Speed NIC")
+    try:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{target_table}'")
+        if not cursor.fetchone():
+            return {
+                "id": check_id, "name": check_name, "status": "WARNING",
+                "message": "System telemetry (sys_stats) is missing from the bundle.",
+                "remediation": (
+                    "**Why this matters:** Without system-level telemetry, we cannot verify if hardware interrupt "
+                    "queues or optimized network drivers (ENA) are active.\n\n"
+                    "**Action Plan:**\n"
+                    "1. Re-run the collection with system metrics enabled: `asadm -e \"collectinfo\"`.\n"
+                    "2. Ensure the user running the command has permissions to execute `ethtool`, `lsmod`, and `top`.\n"
+                    "3. If using Docker, ensure the container has visibility into the host network stack."
+                )
+            }
 
-    if platform == "Bare Metal / On-Prem":
+        query = f"SELECT node_id, value FROM {target_table} WHERE metric = 'network_driver'"
+        df = pd.read_sql_query(query, conn)
+        
+        cursor.execute("SELECT value FROM cluster_metadata WHERE key = 'cloud_platform'")
+        platform = (cursor.fetchone() or ["Unknown"])[0]
+
+        if "AWS" in platform.upper():
+            if df.empty or not df['value'].str.contains('ena|vfio-pci').any():
+                return {
+                    "id": check_id, "name": check_name, "status": "WARNING",
+                    "message": "Optimized network drivers (ENA/vfio-pci) not detected on AWS instances.",
+                    "remediation": (
+                        "**Why this matters:** Standard drivers introduce high interrupt latency. AWS ENA is "
+                        "required for consistent low-latency performance.\n\n"
+                        "**Action Plan:**\n"
+                        "1. Verify ENA support on your EC2 instance type.\n"
+                        "2. Ensure the driver is active in the OS: `modinfo ena`.\n"
+                        "3. Update the AMI if ENA is not supported."
+                    )
+                }
+
         return {
-            "id": check_id, "name": name, "status": "INFO",
-            "message": "Platform identified as Bare Metal. Standard high-speed NICs assumed.",
-            "remediation": "Ensure 10GbE+ networking is used for cluster interconnects."
+            "id": check_id, "name": check_name, "status": "PASS",
+            "message": f"Network acceleration is correctly configured for {platform}.",
+            "remediation": "None"
         }
-
-    # Handling the "Missing Table/Data" scenario (Common in Azure bundles without sudo)
-    if not has_sys_data:
-        return {
-            "id": check_id, "name": name, "status": "WARNING",
-            "message": f"Detected {platform}, but system telemetry (sys_stat) is missing from the bundle.",
-            "remediation": f"Verify manually that **{tech}** is enabled on the virtual machines to prevent latency spikes."
-        }
-
-    # If data existed, we would return a PASS here
-    return {
-        "id": check_id, "name": name, "status": "PASS",
-        "message": f"{tech} is active and verified via system drivers.",
-        "remediation": "None"
-    }
+    except Exception as e:
+        return {"id": check_id, "name": check_name, "status": "CRITICAL", "message": f"Error: {str(e)}"}
+    finally:
+        conn.close()

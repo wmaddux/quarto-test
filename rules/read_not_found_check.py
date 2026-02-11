@@ -1,23 +1,59 @@
 import sqlite3
 import pandas as pd
+
+# -----------------------------------------------------------------------------
+# VERSION STAMP
+# -----------------------------------------------------------------------------
 __version__ = "1.4.0"
+
+# --- Metadata ---
+# ID: 4.b
+# Title: Read Not Found Rate
 
 def run_check(db_path="aerospike_health.db"):
     conn = sqlite3.connect(db_path)
-    # Correct Aerospike 7.2 path
-    query = "SELECT node_id, value FROM namespace_stats WHERE metric = 'service.client_read_not_found' AND value > 0"
-    df = pd.read_sql_query(query, conn)
-    conn.close()
-
-    if df.empty:
-        return {"name": "Rule 3.a: Read Not Found", "status": "PASS", "message": "No 'Read Not Found' events detected."}
-
-    total_rnf = df['value'].sum()
-    formatted_rnf = "{:,}".format(int(total_rnf))
+    check_id = "4.b"
+    check_name = "Read Not Found Rate"
+    target_table = "namespace_stats"
     
-    return {
-        "id": "4.b", "name": "Read Not Found",
-        "status": "INFO",
-        "message": f"Detected {formatted_rnf} 'Read Not Found' events. This is often normal for application cache-miss workflows.",
-        "remediation": "If the application expects all records to exist, investigate potential expiration or eviction issues."
-    }
+    try:
+        # 1. SCHEMA SAFETY CHECK
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{target_table}'")
+        if not cursor.fetchone():
+            return {"id": check_id, "name": check_name, "status": "⚠️ DATA MISSING", "message": "Table not found."}
+
+        # 2. QUERY LOGIC
+        # Compare Read Not Found vs Total Master Reads
+        query = f"""
+            SELECT node_id, namespace, 
+                   CAST(value AS REAL) as not_found_count
+            FROM {target_table} 
+            WHERE metric = 'client_read_not_found'
+        """
+        df = pd.read_sql_query(query, conn)
+        
+        if df.empty or df['not_found_count'].sum() == 0:
+            return {"id": check_id, "name": check_name, "status": "PASS", "message": "No 'Read Not Found' events detected.", "remediation": "None"}
+
+        # 3. ANALYSIS
+        total_not_found = int(df['not_found_count'].sum())
+        
+        # We generally treat this as an 'INFO' level PASS unless it's astronomical.
+        # For this tool, we will PASS but provide the evidence.
+        return {
+            "id": check_id,
+            "name": check_name,
+            "status": "PASS",
+            "message": f"Detected {total_not_found:,} 'Read Not Found' events. This is expected in cache-miss workflows.",
+            "remediation": (
+                "**Why this matters:** A high rate of 'Not Found' results increases application latency as the "
+                "client must handle the null result. If this is higher than expected, verify your Data Retention (TTL) "
+                "settings or check if keys are being evicted prematurely due to HWM."
+            )
+        }
+        
+    except Exception as e:
+        return {"id": check_id, "name": check_name, "status": "CRITICAL", "message": f"Error: {str(e)}"}
+    finally:
+        conn.close()

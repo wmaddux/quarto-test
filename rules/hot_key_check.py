@@ -1,32 +1,58 @@
 import sqlite3
-__version__ = "1.4.0"
+import pandas as pd
+
+# -----------------------------------------------------------------------------
+# VERSION STAMP
+# -----------------------------------------------------------------------------
+__version__ = "1.4.1"
+
+# --- Metadata ---
+# ID: 4.a
+# Title: Hot Key Detection
 
 def run_check(db_path="aerospike_health.db"):
     conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    check_id = "4.a"
+    check_name = "Hot Key Detection"
+    
+    try:
+        # Query for contention errors (fail_key_busy)
+        query = """
+            SELECT node_id, namespace, CAST(value AS REAL) as busy_errors
+            FROM namespace_stats 
+            WHERE metric LIKE '%fail_key_busy%'
+        """
+        df = pd.read_sql_query(query, conn)
+        
+        total_errors = df['busy_errors'].sum() if not df.empty else 0
 
-    # Monitor 'client_write_error_key_busy' for non-zero values
-    query = """
-    SELECT node_id, namespace, value 
-    FROM namespace_stats 
-    WHERE metric = 'client_write_error_key_busy' AND value > 0
-    """
-    cursor.execute(query)
-    rows = cursor.fetchall()
-    conn.close()
+        if total_errors > 0:
+            return {
+                "id": check_id, 
+                "name": check_name, 
+                "status": "WARNING",
+                "message": f"Detected {int(total_errors):,} 'Key Busy' errors in the cluster telemetry.",
+                "remediation": (
+                    "**Assessment:** 'Key Busy' errors occur when multiple concurrent transactions attempt to "
+                    "access the same record, exceeding the internal lock wait timeout. This almost always indicates "
+                    "a 'Hot Key' (high-contention record) in the application data model.\n\n"
+                    "**Action Plan:**\n"
+                    "1. Use `asadm -e 'show statistics namespace'` and search for the `fail_key_busy` metric to "
+                    "identify the specific Namespace and Node experiencing the highest contention.\n"
+                    "2. Evaluate application-level caching or data sharding to distribute access more evenly across different keys.\n"
+                    "3. Check for long-running transactions (UDFs, large batch writes, or complex Read-Modify-Write cycles) "
+                    "that may be holding record locks for extended periods."
+                )
+            }
 
-    if not rows:
         return {
-            "id": "4.a", "name": "Hot Key Detection", 
-            "status": "PASS", 
-            "message": "No 'key busy' errors detected in this snapshot."
+            "id": check_id, 
+            "name": check_name, 
+            "status": "PASS",
+            "message": "No 'key busy' or transaction contention errors detected in this snapshot.",
+            "remediation": "None"
         }
-
-    findings = [f"{r['namespace']} on {r['node_id']} (Count: {int(r['value'])})" for r in rows]
-    return {
-        "id": "4.a", "name": "Hot Key Detection",
-        "status": "WARNING",
-        "message": f"Hot keys detected: {', '.join(findings)}",
-        "remediation": "Investigate application access patterns for high-frequency keys. Consider increasing transaction-pending-limit if this is expected traffic."
-    }
+    except Exception as e:
+        return {"id": check_id, "name": check_name, "status": "CRITICAL", "message": f"Diagnostic Error: {str(e)}"}
+    finally:
+        conn.close()

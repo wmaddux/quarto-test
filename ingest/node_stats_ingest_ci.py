@@ -1,24 +1,49 @@
-__version__ = "1.4.0"
-from ingest.base_ingestor import BaseIngestor
+import sqlite3
 
-class NodeStatsIngestor(BaseIngestor):
-    @property
-    def name(self): return "Node Stats"
+class NodeStatsIngestor:
+    def __init__(self):
+        self.table_name = "node_stats"
 
-    def run_ingest(self, node_id, node_data, conn, run_id):
-        as_stat = node_data.get('as_stat', {})
-        service_stats = as_stat.get('statistics', {}).get('service', as_stat)
-        
+    def flatten_dict(self, d, parent_key='', sep='.'):
+        """Recursively flattens nested Aerospike 7.x JSON."""
+        items = []
+        for k, v in d.items():
+            new_key = f"{parent_key}{sep}{k}" if parent_key else k
+            if isinstance(v, dict):
+                items.extend(self.flatten_dict(v, new_key, sep=sep).items())
+            else:
+                items.append((new_key, v))
+        return dict(items)
+
+    def run_ingest(self, node_id, data, conn, run_id):
         cursor = conn.cursor()
-        # Added 'source' column
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS node_stats 
-            (run_id TEXT, node_id TEXT, metric TEXT, value REAL, source TEXT)
-        """)
         
-        for metric, value in service_stats.items():
-            if isinstance(value, (int, float, str)) and str(value).replace('.','',1).isdigit():
-                m_name = f"service.{metric}" if not metric.startswith('service.') else metric
-                cursor.execute("INSERT INTO node_stats VALUES (?, ?, ?, ?, ?)", 
-                               (run_id, node_id, m_name, float(value), 'statistics'))
-        print(f"✅ {self.name} processed for {node_id}")
+        # Ensure the table can store both Numbers and Strings
+        cursor.execute(f"""
+            CREATE TABLE IF NOT EXISTS {self.table_name} (
+                run_id TEXT,
+                node_id TEXT,
+                metric TEXT,
+                value TEXT
+            )
+        """)
+
+        # Aerospike 7.x data is often nested under 'statistics' or 'service'
+        # We flatten everything to catch 'service.build', 'service.version', etc.
+        flat_data = self.flatten_dict(data)
+
+        insert_items = []
+        for key, value in flat_data.items():
+            if value is None:
+                continue
+            
+            # We store everything as TEXT in the DB to ensure 
+            # versions like 'E-7.2.0.6' aren't dropped. 
+            # The Rules will handle casting to REAL/FLOAT when needed.
+            insert_items.append((run_id, node_id, key, str(value)))
+
+        cursor.executemany(
+            f"INSERT INTO {self.table_name} (run_id, node_id, metric, value) VALUES (?, ?, ?, ?)",
+            insert_items
+        )
+        conn.commit()
