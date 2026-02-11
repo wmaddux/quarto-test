@@ -5,7 +5,7 @@ import pandas as pd
 # VERSION STAMP
 # Ensures this rule is compatible with the v1.4.1 Markdown reporting engine.
 # -----------------------------------------------------------------------------
-__version__ = "1.4.1"
+__version__ = "1.5.4"
 
 # --- Metadata ---
 # ID: 4.f -> Matches the Aerospike Health Catalog
