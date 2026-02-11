@@ -1,4 +1,4 @@
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 # discovery_v2.py
 import json, tarfile, io, gzip, zipfile
 

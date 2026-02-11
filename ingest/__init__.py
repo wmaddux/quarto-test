@@ -1,4 +1,4 @@
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 # ingest/__init__.py
 
 from .node_stats_ingest_ci import NodeStatsIngestor

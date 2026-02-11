@@ -1,17 +1,33 @@
 import sqlite3
 from ingest.base_ingestor import BaseIngestor
 
+# -----------------------------------------------------------------------------
+# VERSION STAMP
+# -----------------------------------------------------------------------------
+__version__ = "1.4.1"
+
+# --- Metadata ---
+# Module: MetadataIngestor
+# Purpose: Cluster-wide flavor discovery (Cloud, Storage, Consistency)
+# Target: cluster_metadata table
+
 class MetadataIngestor(BaseIngestor):
     @property
     def name(self):
         return "Metadata & Flavor Discovery"
 
     def run_ingest(self, node_id, node_data, conn, run_id):
-        # Accessing different blocks
+        # -------------------------------------------------------------------------
+        # DATA EXTRACTION
+        # -------------------------------------------------------------------------
         as_stat = node_data.get('as_stat', {})
         config = as_stat.get('config', {})
         stats = as_stat.get('statistics', {}).get('service', {})
         meta = as_stat.get('meta_data', {}) # New for 7.x
+        
+        # -------------------------------------------------------------------------
+        # FLAVOR DISCOVERY LOGIC
+        # -------------------------------------------------------------------------
         
         # 1. Version Flavor (Hardened for 7.x meta_data block)
         version_str = meta.get('asd_build') or stats.get('asd_build', "Unknown")
@@ -49,7 +65,7 @@ class MetadataIngestor(BaseIngestor):
 
         storage_flavor = "/".join(sorted(storage_types)) if storage_types else "MEMORY"
 
-        # 5. Platform Flavor (catching that va6prod naming!)
+        # 5. Platform Flavor (catching naming conventions like va6prod)
         full_context = str(node_data).lower()
         platform = "Bare Metal / On-Prem"
         if any(x in full_context for x in ["amazonaws", "ec2.internal", "10.94."]): 
@@ -57,19 +73,25 @@ class MetadataIngestor(BaseIngestor):
         elif any(x in full_context for x in ["azure", "cloudapp", "10.181."]): 
             platform = "Azure"
 
-        # ... (Topology remains similar) ...
+        # 6. Topology Discovery
         is_xdr = len(as_stat.get('statistics', {}).get('xdr', {})) > 0
         topology = "XDR Enabled" if is_xdr else "Standalone"
 
-        # Save to DB
+        # -------------------------------------------------------------------------
+        # DATABASE UPDATE
+        # -------------------------------------------------------------------------
         cursor = conn.cursor()
         meta_items = [
-            ("server_version", version_str), ("major_version", major_v),
-            ("cloud_platform", platform), ("consistency_model", consistency),
-            ("storage_flavor", storage_flavor), ("topology", topology)
+            ("server_version", version_str), 
+            ("major_version", major_v),
+            ("cloud_platform", platform), 
+            ("consistency_model", consistency),
+            ("storage_flavor", storage_flavor), 
+            ("topology", topology)
         ]
         for key, val in meta_items:
             cursor.execute("INSERT OR REPLACE INTO cluster_metadata (key, value) VALUES (?, ?)", (key, val))
+        
         conn.commit()
 
         print(f"✅ {self.name}: Identified as {platform} | {consistency} | {storage_flavor}")

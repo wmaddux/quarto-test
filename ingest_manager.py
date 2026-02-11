@@ -1,4 +1,4 @@
-__version__ = "1.4.0"
+__version__ = "1.4.1"
 #!/usr/bin/env python3
 import sqlite3
 import tarfile
