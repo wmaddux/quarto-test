@@ -1,0 +1,114 @@
+
+
+```{python}
+#| label: setup-perf
+#| output: false
+%run _setup.qmd
+import plotly.express as px
+from IPython.display import display, Markdown
+```
+
+
+### Disk Usage % by Node
+As per **Rule 2.d**, disk utilization is monitored against a **60% High Water Mark (HWM)** to prevent forced evictions.
+
+```{python}
+#| label: disk-chart
+if os.path.exists(db_path):
+    conn = sqlite3.connect(db_path)
+    # Using the working MAX/GROUP BY logic
+    query = """
+        SELECT node_id, namespace, MAX(value) as used_pct 
+        FROM namespace_stats 
+        WHERE metric LIKE '%data_used_pct%' 
+        GROUP BY node_id, namespace
+    """
+    df_disk = pd.read_sql_query(query, conn)
+    conn.close()
+
+    if not df_disk.empty:
+        fig = px.bar(df_disk, x="node_id", y="used_pct", color="namespace", 
+                     barmode="group", title="Disk Usage % by Node")
+        
+        fig.update_layout(
+            xaxis_tickangle=-45,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.5,
+                xanchor="center",
+                x=0.5
+            ),
+            margin=dict(b=100),
+            yaxis_range=[0, 75]
+        )
+        
+        fig.add_hline(y=60, line_dash="dot", line_color="red", annotation_text="HWM (60%)")
+        fig.show()
+```
+
+---
+
+### Client Connections
+Rule **6.a** monitors connection distribution. Your current audit shows one user holding a significant monopoly on these resources.
+
+```{python}
+#| label: connections-chart
+if os.path.exists(db_path):
+    conn = sqlite3.connect(db_path)
+    # Using the full path verified in your telemetry
+    query = """
+        SELECT node_id, CAST(value AS INTEGER) as value 
+        FROM node_stats 
+        WHERE metric = 'as_stat.statistics.service.client_connections'
+    """
+    df_conn = pd.read_sql_query(query, conn)
+    conn.close()
+
+    if not df_conn.empty:
+        fig_conn = px.bar(df_conn, x='node_id', y='value', 
+                          title="Client Connections by Node", 
+                          color_discrete_sequence=['teal'])
+        
+        fig_conn.update_layout(
+            margin=dict(b=50),
+            xaxis_title="Node ID",
+            yaxis_title="Count",
+            xaxis_tickangle=-45
+        )
+        fig_conn.show()
+    else:
+        display(Markdown("> ⚠️ **Telemetry Missing:** `as_stat.statistics.service.client_connections` not found."))
+```
+
+---
+
+### Hot Key Analysis
+High volumes of `fail_key_busy` errors indicate extreme write contention on specific records, which can lead to application-level latency and timeouts.
+
+```{python}
+#| label: hotkey-chart
+if os.path.exists(db_path):
+    conn = sqlite3.connect(db_path)
+    # Searching for variations of 'key_busy' to ensure the chart renders
+    query = """
+        SELECT node_id, SUM(CAST(value AS REAL)) as val 
+        FROM node_stats 
+        WHERE metric LIKE '%fail_key_busy%' OR metric LIKE '%client_key_busy%'
+        GROUP BY node_id
+    """
+    df_hot = pd.read_sql_query(query, conn)
+    conn.close()
+
+    if not df_hot.empty and df_hot['val'].sum() > 0:
+        total_hk = df_hot['val'].sum()
+        display(Markdown(f"**Action Required:** Detected **{total_hk:,.0f}** 'Key Busy' errors in the cluster telemetry, suggesting heavy contention on specific keys."))
+        
+        fig_hot = px.bar(df_hot, x="node_id", y="val", 
+                         title="Hot Key Errors (fail_key_busy) by Node",
+                         color_discrete_sequence=['#e67e22'])
+        fig_hot.update_layout(xaxis_tickangle=-45, yaxis_title="Error Count", xaxis_title="Node ID")
+        fig_hot.show()
+    else:
+        display(Markdown("> ✅ **No active hot key contention** detected in the recent telemetry window."))
+```

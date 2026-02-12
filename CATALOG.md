@@ -1,4 +1,4 @@
-# Aerospike Health Analyzer: Master Rule Catalog (v1.5.4)
+# Aerospike Health Analyzer: Master Rule Catalog (v1.6.0)
 
 [cite_start]This catalog defines the logic used to evaluate cluster health, automating the detection of recurring issue patterns to enable proactive support[cite: 3, 6, 7].
 
@@ -57,5 +57,5 @@
 | **6.a** | **Security Connection Audit**| ✅ | User connections > 500/node. | [cite_start]**Why:** Potential connection leak or unauthorized spike [cite: 36, 81][cite_start].<br>**Action:** Audit credentials and connection pooling[cite: 36, 81]. |
 
 ---
-**Baseline:** v1.5.4
+**Baseline:** v1.6.0
 **Last Updated:** 2026-02-11

@@ -1,0 +1,33 @@
+
+```{python}
+#| output: false
+# Execute the setup logic to populate variables
+%run _setup.qmd
+```
+
+### Cluster Context
+
+```{python}
+#| output: asis
+from IPython.display import display, Markdown
+
+# We build the context table using the metadata variables populated in _setup.qmd
+context_md = f"""
+| Attribute | Value |
+| :--- | :--- |
+| **Cluster Name** | {cluster_display} |
+| **Server Version** | {server_version} |
+| **Cloud Platform** | {cloud_platform} |
+| **Node Count** | {node_count} |
+| **Consistency Model**| {consistency} |
+| **Storage Engine** | {storage} |
+| **Index Location** | {idx_type} |
+| **Topology** | {topology} |
+| **Active Features** | {active_features_str} |
+
+"""
+
+display(Markdown(context_md))
+```
+
+---

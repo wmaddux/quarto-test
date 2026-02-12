@@ -1,0 +1,334 @@
+---
+title: "Aerospike Health and Performance Report"
+author: "Aerospike TAM Team"
+format: 
+  html:
+    self-contained: true
+    code-tools: false
+    code-fold: false
+execute:
+  echo: false
+---
+
+```{python}
+#| output: false
+import sqlite3
+import pandas as pd
+import plotly.express as px
+import os
+import datetime
+from IPython.display import display, Markdown, HTML
+import sys
+
+# --- Import Rules ---
+# Updated imports to match filenames verified in check_integrity.py
+from rules import (
+    error_skew_check, 
+    version_consistency_check,
+    network_acceleration_check,
+    storage_deadlock_check,   # Fixed: match filename storage_deadlock_check.py
+    sindex_on_flash_check,    # Fixed: match filename sindex_on_flash_check.py
+    sprig_limit_check,        # Fixed: match filename sprig_limit_check.py
+    hwm_check,
+    memory_hwm_check,
+    config_symmetry_check,
+    config_drift_check,
+    hot_key_check,
+    read_not_found_check,
+    delete_not_found_check,
+    set_object_skew_check,
+    capacity_check,
+    security_connection_audit
+)
+
+# --- Baseline Metadata ---
+PROJECT_VERSION = "1.6.0"
+GEN_DATE = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+db_path = "aerospike_health.db"
+
+# --- 1. Data Retrieval & Metadata ---
+cluster_display = "Unnamed Cluster"
+server_version = "Unknown"
+node_count = 0
+feature_list = []
+active_features_str = "None detected"
+cloud_platform = "Unknown"
+consistency = "Unknown"
+storage = "Unknown"
+idx_type = "Unknown"
+topology = "Unknown"
+
+if os.path.exists(db_path):
+    conn = sqlite3.connect(db_path)
+    try:
+        meta_df = pd.read_sql_query("SELECT * FROM cluster_metadata", conn)
+        metadata = dict(zip(meta_df['key'], meta_df['value']))
+
+        cluster_display = metadata.get('cluster_name', "Unnamed Cluster")
+        cloud_platform = metadata.get('cloud_platform', "Unknown")
+        server_version = metadata.get('server_version', "Unknown")
+        consistency = metadata.get('consistency_model', "Unknown")
+        storage = metadata.get('storage_flavor', "Unknown")
+        idx_type = metadata.get('index_flavor', "Unknown")
+        topology = metadata.get('topology', "Unknown")
+        
+        node_res = pd.read_sql_query("SELECT COUNT(DISTINCT node_id) as count FROM node_stats", conn)
+        node_count = node_res['count'].iloc[0] if not node_res.empty else 0
+
+        features_df = pd.read_sql_query("SELECT DISTINCT feature FROM active_features", conn)
+        feature_list = sorted(features_df['feature'].tolist())
+        active_features_str = ", ".join(feature_list) if feature_list else "None detected"
+
+    except Exception as e:
+        print(f"Error during metadata retrieval: {e}")
+    finally:
+        conn.close()
+
+# --- 2. Execute Ruleset ---
+# Incremental Fix: Pass db_path to satisfy run_check(db_path) signature
+results = [
+    error_skew_check.run_check(db_path),
+    version_consistency_check.run_check(db_path),
+    network_acceleration_check.run_check(db_path),
+    storage_deadlock_check.run_check(db_path),
+    sindex_on_flash_check.run_check(db_path),
+    sprig_limit_check.run_check(db_path),
+    hwm_check.run_check(db_path),
+    memory_hwm_check.run_check(db_path),
+    config_symmetry_check.run_check(db_path),
+    config_drift_check.run_check(db_path),
+    hot_key_check.run_check(db_path),
+    read_not_found_check.run_check(db_path),
+    delete_not_found_check.run_check(db_path),
+    set_object_skew_check.run_check(db_path),
+    capacity_check.run_check(db_path),
+    security_connection_audit.run_check(db_path)
+]
+
+# Write to stderr for VS Code logs
+print(f"\n--- Processed {len(results)} Rules ---", file=sys.stderr)
+for r in results:
+    # Incremental Fix: Use .get() to avoid KeyError if 'id' or 'name' is missing
+    r_id = r.get('id', '?.?')
+    r_name = r.get('name', 'Unknown Rule')
+    print(f"[{r['status']}] {r_id} {r_name}: {r['message']}", file=sys.stderr)
+
+# --- 3. Dynamic Narrative Generation ---
+crit_count = len([r for r in results if r['status'] == 'CRITICAL'])
+warn_count = len([r for r in results if r['status'] == 'WARNING'])
+
+if crit_count > 0:
+    cluster_assessment = f"⚠️ This cluster requires **immediate intervention**. {crit_count} critical issues were detected."
+elif warn_count > 3:
+    cluster_assessment = f"⚡ The cluster is stable but showing signs of **resource pressure**. {warn_count} warnings suggest optimization is required."
+else:
+    cluster_assessment = "✅ The cluster is currently **healthy and operating within optimal parameters**."
+
+```
+
+```{python}
+#| label: dynamic-header
+#| echo: false
+#| output: asis
+
+# --- 4. Extract Vitals for Header ---
+cap_vitals = next((r for r in results if r.get('id') == '5.a'), {'status': 'UNKNOWN', 'message': 'No data'})
+sec_vitals = next((r for r in results if r.get('id') == '6.a'), {'status': 'UNKNOWN', 'message': 'No data'})
+
+def get_status_icon(status):
+    if status == 'PASS': return "✅"
+    if status == 'WARNING': return "⚠️"
+    if status == 'CRITICAL': return "🚨"
+    return "❓"
+
+cap_icon = get_status_icon(cap_vitals['status'])
+sec_icon = get_status_icon(sec_vitals['status'])
+
+# --- Existing Narrative Logic ---
+is_sc = "Strong Consistency" in consistency
+mode_name = "Strong Consistency (SC) deployment" if is_sc else "Available/Partition-tolerant (AP) deployment"
+priority_text = "partition safety and transaction integrity" if is_sc else "throughput efficiency and resource headroom"
+
+summary_narrative = (
+    f"This diagnostic evaluates the **{cluster_display}** environment, currently running Aerospike **{server_version}** "
+    f"across a **{node_count}-node** footprint. Optimized as a **{mode_name}**, the findings below prioritize "
+    f"{priority_text}."
+)
+
+if topology == "XDR Enabled":
+    summary_narrative += " Cross-Datacenter Replication (XDR) is active, adding requirements for inter-cluster bandwidth monitoring."
+
+header_md = f"""
+# Aerospike Cluster Health Assessment
+
+{cluster_assessment}
+
+---
+
+## Executive Summary
+
+{summary_narrative}
+
+::: {{.grid}}
+::: {{.g-col-6}}
+### {cap_icon} Capacity Forecast
+**Status:** {cap_vitals['message']}
+:::
+::: {{.g-col-6}}
+### {sec_icon} Security Audit
+**Status:** {sec_vitals['message']}
+:::
+:::
+
+---
+
+### Cluster Context
+| Attribute | Value |
+| :--- | :--- |
+| **Cluster Name** | {cluster_display} |
+| **Server Version** | {server_version} |
+| **Cloud Platform** | {cloud_platform} |
+| **Node Count** | {node_count} |
+| **Consistency Model**| {consistency} |
+| **Storage Engine** | {storage} |
+| **Index Location** | {idx_type} |
+| **Topology** | {topology} |
+| **Active Features** | {active_features_str} |
+
+::: {{.callout-note collapse="true"}}
+## Why this context matters
+The active features detected (such as SC, Rack-awareness, or XDR) fundamentally change how Aerospike handles data distribution and consistency. This report tailors its health checks based on the specific architectural flags identified during ingestion.
+:::
+
+::: {{.callout-note}}
+## TAM Assessment Scope
+Findings are based on a point-in-time snapshot. Remediation should be tested in a staging environment before production deployment.
+:::
+"""
+
+display(Markdown(header_md))
+```
+
+## Cluster Status Overview
+```{python}
+#| label: cluster-overview
+#| echo: false
+#| output: asis
+
+for res in results:
+    if res['status'] in ['CRITICAL', 'WARNING']:
+        status_style = "danger" if res['status'] == "CRITICAL" else "warning"
+        display(Markdown(f"::: {{.callout-{status_style}}}\n## {res['name']}\n{res['message']}\n:::\n"))
+```
+
+# Performance and Utilization
+
+## Disk Usage % by Node
+```{python}
+#| label: disk-chart
+#| echo: false
+if os.path.exists(db_path):
+    conn = sqlite3.connect(db_path)
+    query = """
+        SELECT node_id, namespace, MAX(value) as used_pct 
+        FROM namespace_stats 
+        WHERE metric LIKE '%data_used_pct%' 
+        GROUP BY node_id, namespace
+    """
+    df_disk = pd.read_sql_query(query, conn)
+    conn.close()
+
+    if not df_disk.empty:
+        fig = px.bar(df_disk, x="node_id", y="used_pct", color="namespace", barmode="group", title="Disk Usage % by Node")
+        
+        # VISUAL FIX: Legend at bottom to support 5+ nodes
+        fig.update_layout(
+            xaxis_tickangle=-45,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.3,  # Push legend down
+                xanchor="center",
+                x=0.5
+            ),
+            margin=dict(b=100) # Add margin space for the legend
+        )
+        
+        fig.add_hline(y=60, line_dash="dot", line_color="red", annotation_text="HWM (60%)")
+        fig.show()
+```
+
+## Client Connections
+```{python}
+#| label: connections-chart
+#| echo: false
+if os.path.exists(db_path):
+    conn = sqlite3.connect(db_path)
+    # Using the full path discovered in node_stats
+    query = """
+        SELECT node_id, CAST(value AS INTEGER) as value 
+        FROM node_stats 
+        WHERE metric = 'as_stat.statistics.service.client_connections'
+    """
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    
+    if not df.empty:
+        fig = px.bar(df, x='node_id', y='value', 
+                     title="Client Connections by Node", 
+                     color_discrete_sequence=['teal'])
+        
+        fig.update_layout(
+            margin=dict(b=50),
+            xaxis_title="Node ID",
+            yaxis_title="Count"
+        )
+        fig.show()
+    else:
+        display(Markdown("> ⚠️ **Telemetry Missing:** `as_stat.statistics.service.client_connections` not found."))
+```
+
+
+# Observations and Remediation
+
+```{python}
+#| label: observations-remediation
+#| echo: false
+#| results: asis
+
+actionable = [res for res in results if res['status'] != "PASS"]
+
+if not actionable:
+    display(Markdown("\n\n> ✅ **All checks passed.** No critical issues detected.\n"))
+else:
+    for res in sorted(actionable, key=lambda x: x.get('id', '??')):
+        remediation = res.get('remediation') or res.get('finding') or "Review telemetry."
+        display(Markdown(f"### {res.get('id', '??')}: {res['name']}\n\n{res['message']}\n\n**Recommendation:** {remediation}\n\n---\n\n"))
+```
+
+# Appendix: All Tests Performed
+
+```{python}
+#| label: test-table
+#| echo: false
+
+# Create a clean list for the audit table
+table_rows = []
+for res in sorted(results, key=lambda x: x.get('id', '??')):
+    status_icon = "✅" if res['status'] == "PASS" else "❌" if res['status'] == "CRITICAL" else "⚠️"
+    table_rows.append({
+        "ID": res.get('id', '??'),
+        "Rule Name": res['name'],
+        "Status": f"{status_icon} {res['status']}",
+        "Evidence / Detail": res['message']
+    })
+
+# Render as a clean HTML table
+display(HTML(pd.DataFrame(table_rows).to_html(index=False, escape=False, classes='table table-striped')))
+```
+
+---
+
+::: {style="text-align: center; font-size: 0.8em; color: gray;"}
+**Aerospike Health Analyzer** | Version: `{python} PROJECT_VERSION` | Generated: `{python} GEN_DATE`
+:::

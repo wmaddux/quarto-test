@@ -1,4 +1,4 @@
-# Aerospike Health Analyzer (v1.5.4)
+# Aerospike Health Analyzer (v1.6.0)
 
 The **Aerospike Health Analyzer** is a professional diagnostic framework and toolset developed to enable rapid identification of configuration and operational issues across Aerospike 7.x clusters[cite: 3]. By automating the detection of recurring issue patterns tied to deployment topology, resource limits, and operational practices, this tool provides a structured, data-driven way to analyze and communicate cluster health[cite: 6, 7]. It serves as the foundation for delivering scalable, proactive support to enterprise environments[cite: 5].
 
@@ -85,4 +85,4 @@ We encourage contributions that expand our declarative ruleset[cite: 47]. To add
 3.  Register your rule in `check_integrity.py` and `report.qmd`.
 
 ---
-**Baseline:** v1.5.4 | **Last Updated:** 2026-02-11 | **Maintainer:** Technical Account Management (TAM)
+**Baseline:** v1.6.0 | **Last Updated:** 2026-02-11 | **Maintainer:** Technical Account Management (TAM)

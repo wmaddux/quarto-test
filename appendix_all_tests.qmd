@@ -1,0 +1,31 @@
+
+
+```{python}
+#| label: setup-appendix
+#| output: false
+%run _setup.qmd
+```
+
+## Appendix: All Tests Performed
+
+This inventory lists every diagnostic rule executed during this assessment, providing full transparency into the health checks performed.
+
+```{python}
+#| label: appendix-table
+#| echo: false
+
+# Create a clean list for the audit table
+table_rows = []
+for res in sorted(results, key=lambda x: x.get('id', '??')):
+    status_icon = "✅" if res['status'] == "PASS" else "🚨" if res['status'] == "CRITICAL" else "⚠️"
+    
+    table_rows.append({
+        "ID": res.get('id', '??'),
+        "Rule Name": res['name'],
+        "Status": f"{status_icon} {res['status']}",
+        "Summary Finding": res.get('message', '').strip()
+    })
+
+# Render as a clean HTML table
+display(HTML(pd.DataFrame(table_rows).to_html(index=False, escape=False, classes='table table-striped table-hover')))
+```
