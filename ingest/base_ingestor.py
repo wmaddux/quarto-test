@@ -1,4 +1,4 @@
-__version__ = "1.5.4"
+__version__ = "1.6.0"
 from abc import ABC, abstractmethod
 
 class BaseIngestor(ABC):
