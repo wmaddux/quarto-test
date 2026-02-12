@@ -6,7 +6,7 @@ import importlib
 # -----------------------------------------------------------------------------
 # VERSION STAMP
 # -----------------------------------------------------------------------------
-__version__ = "1.5.4"
+__version__ = "1.6.0"
 
 def verify():
     db_path = "aerospike_health.db"
@@ -40,18 +40,19 @@ def verify():
     print(f"--- Integrity Check: Validating {len(REQUIRED_RULES)} Rules ---")
     errors = 0
     
+    # ... inside your for rule in REQUIRED_RULES loop ...
     for rule in REQUIRED_RULES:
         rule_name = getattr(rule, "__name__", str(rule))
         try:
-            # Run the check against the live database to detect schema mismatches
             res = rule.run_check(db_path)
+            rid = res.get('id', '??')  # Get the ID from the rule output
             
             msg = res.get('message', '')
             if "Error" in msg or "no such" in msg.lower():
-                print(f"❌ {rule_name:<30} | SCHEMA ERROR: {msg}")
+                print(f"❌ {rid:<5} | {rule_name:<30} | SCHEMA ERROR: {msg}")
                 errors += 1
             else:
-                print(f"✅ {rule_name:<30} | Logic OK ({res['status']})")
+                print(f"✅ {rid:<5} | {rule_name:<30} | Logic OK ({res['status']})")
                 
         except Exception as e:
             print(f"💥 {rule_name:<30} | CRASHED: {str(e)}")
