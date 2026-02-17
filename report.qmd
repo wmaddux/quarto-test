@@ -17,23 +17,24 @@ execute:
 #| label: setup
 #| output: false
 # This centralizes all data loading and rule execution
+# Assuming _setup.qmd remains in the root directory
 %run _setup.qmd
 ```
 
-{{< include assessment_header.qmd >}}
+{{< include report_components/_assessment_header.qmd >}}
 
-{{< include executive_summary.qmd >}}
+{{< include report_components/_executive_summary.qmd >}}
 
-{{< include cluster_context.qmd >}}
+{{< include report_components/_cluster_context.qmd >}}
 
-{{< include status_overview.qmd >}}
+{{< include report_components/_status_overview.qmd >}}
 
 ## Performance and Utilization
-{{< include performance_utilization.qmd >}}
+{{< include report_components/_performance_utilization.qmd >}}
 
-{{< include observations_remediation.qmd >}}
+{{< include report_components/_observations_remediation.qmd >}}
 
-{{< include appendix_all_tests.qmd >}}
+{{< include report_components/_appendix_all_tests.qmd >}}
 
 ---
 

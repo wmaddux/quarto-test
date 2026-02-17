@@ -1,50 +1,61 @@
-# Aerospike Health Analyzer (v1.6.0)
+# Aerospike Health Analyzer (v1.6.1)
 
-The **Aerospike Health Analyzer** is a professional diagnostic framework and toolset developed to enable rapid identification of configuration and operational issues across Aerospike 7.x clusters[cite: 3]. By automating the detection of recurring issue patterns tied to deployment topology, resource limits, and operational practices, this tool provides a structured, data-driven way to analyze and communicate cluster health[cite: 6, 7]. It serves as the foundation for delivering scalable, proactive support to enterprise environments[cite: 5].
-
----
-
-## 🚀 Application Pipeline
-
-The analyzer transforms raw telemetry into actionable insights through a three-stage lifecycle:
-
-1.  **Ingestion:** Dynamically discovers the primary telemetry member within `.tgz` bundles and normalizes system vitals and configuration attributes into a structured SQLite database.
-2.  **Analysis:** Executes a declarative, rule-based anomaly detection framework to identify deviations from best practices, such as inconsistent replication factors or sindex memory exhaustion.
-3.  **Reporting:** Renders a high-fidelity "Wellness Report" via Quarto, providing a summary dashboard of cluster vitals and detailed remediation recommendations with severity and impact levels.
+A universal diagnostic framework for Aerospike clusters, providing native support for **6.x, 7.x, and 8.x** Enterprise editions. It ingests `collectinfo` telemetry into a relational SQLite database, executes a version-aware rule engine, and generates modular Quarto HTML reports.
 
 ---
 
-## 📂 Project Structure
+## 🏗 Architecture & Design
 
-### Core Orchestration
-* **`run_ingest.py`**: The primary CLI entry point for processing bundles.
-* **`ingest_manager.py`**: Manages the SQLite schema, parser orchestration, and the 3-level JSON loop (Timestamp → Cluster → Node).
-* **`ingest/`**: Contains specialized class-based ingestors for specific telemetry slices, such as `set_stats` and `security_stats`.
+The tool is built on a **Version-Agnostic Data Pipeline**:
 
-### Analysis & UI
-* **`rules/`**: The logic library. Each independent module expresses and detects a specific anomaly, such as storage deadlocks or hot keys[cite: 10, 18].
-* **`check_integrity.py`**: A validation suite used to verify the database schema and rule signatures before report generation.
-* **`report.qmd`**: The Quarto template that executes rules and generates the final interactive HTML scorecard.
+1.  **Schema-Resilient Ingestion (`ingest/`)**:
+    * **`run_ingest.py`**: Automated discovery of telemetry regardless of bundle naming conventions.
+    * **`ingest_manager.py`**: Handles dynamic schema creation, ensuring compatibility with evolving Aerospike telemetry structures across major versions.
+    * **Wide-Table Mapping**: Specifically handles the transition from vertical metric/value pairs in older versions to the horizontal/wide telemetry format in 7.x and 8.x.
+2.  **Cross-Generation Logic (`rules/`)**:
+    * **Dynamic Discovery**: Rules use "Schema Discovery" (querying `sqlite_master` and `PRAGMA table_info`) to automatically adjust queries based on the detected database version (e.g., handling `ns` vs `ns_name`).
+    * **Integrity Gate (`check_integrity.py`)**: A pre-flight validator that ensures the ruleset is compatible with the specific schema of the ingested bundle before rendering.
+3.  **Modular Presentation (`report_components/`)**:
+    * **`report.qmd`**: A decoupled Quarto template that remains constant while sub-components (`report_components/`) adapt the visualization based on the available data.
+
+
 
 ---
 
-## ⚙️ Installation & Setup
+## 📂 Directory Structure
+
+```text
+health-analyzer/
+├── run_ingest.py         # Ingestion entry point
+├── check_integrity.py    # Multi-version rule validator
+├── commit_baseline.py    # Automation & CI/CD pipeline
+├── report.qmd            # Master report template
+├── _setup.qmd            # Version-aware data loading & rule execution
+├── ingest/               # Cross-generation telemetry parsers
+├── rules/                # Diagnostic logic library (6.x/7.x/8.x compatible)
+├── report_components/    # Modular UI partials (.qmd)
+├── bundles/              # Source .tgz collectinfo files
+└── aerospike_health.db   # SQLite database (generated)
+```
+
+---
+
+## ⚙️ Installation
 
 ### Prerequisites
 * **Python 3.10+**
-* **Quarto CLI:** [Download and Install Quarto](https://quarto.org/docs/get-started/)
+* **Quarto CLI**: [Installation Guide](https://quarto.org/docs/get-started/)
 
 ### Setup
 ```bash
-# Clone the repository
 git clone [https://github.com/aerospike/health-analyzer.git](https://github.com/aerospike/health-analyzer.git)
 cd health-analyzer
 
-# Initialize virtual environment
+# Setup Virtual Environment
 python3 -m venv .venv
 source .venv/bin/activate
 
-# Install required dependencies
+# Install Dependencies
 pip install pandas plotly sqlite3
 ```
 
@@ -52,37 +63,32 @@ pip install pandas plotly sqlite3
 
 ## 🛠 Usage
 
-### 1. Ingest Telemetry
-Pass a standard Aerospike `collectinfo` bundle[cite: 66]. The analyzer dynamically discovers the nested JSON regardless of filename prefixes. 
-**Note:** To ensure a clean data model and prevent schema conflicts, always delete any existing database before re-ingesting new data[cite: 9].
+### 1. Data Ingestion
+Processes a `collectinfo` bundle. The ingestor automatically detects the Aerospike version, cluster flavor (AWS/GCP/Azure/Bare Metal), and topology (AP/SC).
 
 ```bash
-# Remove old data to ensure a fresh schema
+# Recommended: Clean previous runs
 rm -f aerospike_health.db
 
-# Ingest new bundle
-python3 run_ingest.py bundles/aws-cluster.collect_info_20260120.tgz
+# Ingest bundle
+python3 run_ingest.py bundles/your_bundle.tgz
 ```
 
-### 2. Verify Integrity
-Ensure the ingested data is consistent with the latest rule signatures before rendering the report.
+### 2. Integrity Check
+Verify that the database schema (version-specific) supports the current ruleset.
 ```bash
 python3 check_integrity.py
 ```
 
-### 3. Generate the Wellness Report
-Render the final diagnostic scorecard into a self-contained HTML file[cite: 63, 69].
+### 3. Generate Report
+Renders the final diagnostic HTML.
 ```bash
 quarto render report.qmd
 ```
 
 ---
 
-## 🤝 Contributing
-We encourage contributions that expand our declarative ruleset[cite: 47]. To add a new rule:
-1.  Review the **`CATALOG.md`** for planned roadmap items and identified product gaps[cite: 26].
-2.  Implement your logic in `rules/` using the standard `run_check(db_path)` interface.
-3.  Register your rule in `check_integrity.py` and `report.qmd`.
+## 📝 Rule Development
+New rules should implement the `run_check(db_path)` interface. To maintain multi-version support, always use schema-discovery queries to identify column availability before executing analysis.
 
----
-**Baseline:** v1.6.0 | **Last Updated:** 2026-02-11 | **Maintainer:** Technical Account Management (TAM)
+**Version:** 1.6.0 | **Maintainer:** Aerospike TAM Team | **Target:** Aerospike 6.x, 7.x, 8.x Enterprise

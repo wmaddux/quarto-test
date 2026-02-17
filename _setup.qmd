@@ -9,8 +9,9 @@ from IPython.display import display, Markdown, HTML
 import sys
 
 # --- Import Rules ---
+# We assume the 'rules' directory is in the python path
 from rules import (
-    error_skew_check, 
+    service_error_skew_check, 
     version_consistency_check,
     network_acceleration_check,
     storage_deadlock_check,
@@ -29,7 +30,7 @@ from rules import (
 )
 
 # --- Baseline Metadata ---
-PROJECT_VERSION = "1.6.0"
+PROJECT_VERSION = "1.6.1"
 GEN_DATE = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 db_path = "aerospike_health.db"
 
@@ -59,27 +60,32 @@ if os.path.exists(db_path):
         storage = metadata.get('storage_flavor', "Unknown")
         topology = metadata.get('topology', "Unknown")
         
-       # --- NEW: Dynamic Index Location Lookup (Resilient) ---
+        # --- Resilient Index Flavor Lookup ---
         idx_type = metadata.get('index_flavor', "Unknown")
         if idx_type == "Unknown":
-            # Check for All-Flash indicators (mounts)
-            idx_res = pd.read_sql_query(
-                "SELECT DISTINCT metric FROM namespace_stats WHERE metric LIKE 'service.index-type.mount%'", 
-                conn
-            )
-            if not idx_res.empty:
-                idx_type = "Flash (All-Flash)"
-            else:
-                # Fallback: If no mounts exist but index metrics do, it's standard RAM
-                idx_type = "RAM (shmem)"
+            # Check for All-Flash indicators in the wide schema (Aerospike 7.x)
+            cursor = conn.cursor()
+            cursor.execute("PRAGMA table_info(namespace_stats)")
+            cols = [c[1] for c in cursor.fetchall()]
+            
+            # If 'index-type' column exists and contains 'flash'
+            if 'index-type' in cols:
+                idx_check = pd.read_sql_query("SELECT DISTINCT `index-type` FROM namespace_stats", conn)
+                if any(x == 'flash' for x in idx_check['index-type'].tolist()):
+                    idx_type = "Flash (All-Flash)"
+                else:
+                    idx_type = "RAM (shmem)"
         # ------------------------------------------
 
         node_res = pd.read_sql_query("SELECT COUNT(DISTINCT node_id) as count FROM node_stats", conn)
         node_count = node_res['count'].iloc[0] if not node_res.empty else 0
 
-        features_df = pd.read_sql_query("SELECT DISTINCT feature FROM active_features", conn)
-        feature_list = sorted(features_df['feature'].tolist())
-        active_features_str = ", ".join(feature_list) if feature_list else "None detected"
+        # Feature Check
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='active_features'")
+        if cursor.fetchone():
+            features_df = pd.read_sql_query("SELECT DISTINCT feature FROM active_features", conn)
+            feature_list = sorted(features_df['feature'].tolist())
+            active_features_str = ", ".join(feature_list) if feature_list else "None detected"
 
     except Exception as e:
         print(f"Error during metadata retrieval: {e}")
@@ -88,7 +94,7 @@ if os.path.exists(db_path):
 
 # --- 2. Execute Ruleset ---
 results = [
-    error_skew_check.run_check(db_path),
+    service_error_skew_check.run_check(db_path),
     version_consistency_check.run_check(db_path),
     network_acceleration_check.run_check(db_path),
     storage_deadlock_check.run_check(db_path),
@@ -107,9 +113,8 @@ results = [
 ]
 
 # --- 3. Dynamic Narrative & Vitals Logic ---
-# We count both WARNING and DATA MISSING as "warnings" to match the UI
 crit_count = len([r for r in results if r.get('status') == 'CRITICAL'])
-warn_count = len([r for r in results if r.get('status') in ['WARNING', '⚠️ DATA MISSING']])
+warn_count = len([r for r in results if r.get('status') in ['WARNING', '⚠️ DATA MISSING', '⚠️ SCHEMA MISMATCH']])
 
 if crit_count > 0:
     cluster_assessment = f"⚠️ This cluster requires **immediate intervention**. {crit_count} critical issues were detected." 
@@ -118,24 +123,18 @@ elif warn_count > 0:
 else:
     cluster_assessment = "✅ The cluster is currently **healthy and operating within optimal parameters**." 
 
-# --- Updated Vitals Extraction in _setup.qmd ---
+# Extraction of 'Vitals' for the Status Overview Component
+def get_rule_result(rule_id):
+    return next((r for r in results if r.get('id') == rule_id), 
+                {'status': 'PASS', 'message': 'Metric nominal.'})
 
-# 1. Capacity (5.a)
-cap_vitals = next((r for r in results if r.get('id') == '5.a'), 
-                  {'status': 'PASS', 'message': 'Resource utilization is nominal.'})
-
-# 2. Security (6.a)
-sec_vitals = next((r for r in results if r.get('id') == '6.a'), 
-                  {'status': 'PASS', 'message': 'Security policies are active.'})
-
-# 3. Configuration Integrity (1.a - Symmetry/Consistency)
-# We search for Symmetry check to ensure the cluster is 'uniform'
-sym_vitals = next((r for r in results if r.get('id') == '3.a'), 
-                  {'status': 'PASS', 'message': 'Node configurations are synchronized.'})
+cap_vitals = get_rule_result('5.a')
+sec_vitals = get_rule_result('6.a')
+sym_vitals = get_rule_result('3.a')
 
 def get_status_icon(status):
     if status == 'PASS': return "✅"
-    if status == 'WARNING': return "⚠️"
+    if status == 'WARNING' or '⚠️' in status: return "⚠️"
     if status == 'CRITICAL': return "🚨"
     return "❓"
 

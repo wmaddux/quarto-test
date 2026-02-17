@@ -1,0 +1,18 @@
+
+
+```{python}
+#| output: false
+# Execute the setup logic to populate variables
+%run _setup.qmd
+```
+
+# Aerospike Cluster Health Assessment
+
+```{python}
+#| echo: false
+#| output: asis
+# This ensures the emoji and bold text render as Markdown
+display(Markdown(cluster_assessment))
+```
+
+---

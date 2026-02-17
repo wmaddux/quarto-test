@@ -1,0 +1,35 @@
+
+
+```{python}
+#| output: false
+%run _setup.qmd
+```
+
+## Cluster Status Overview
+
+```{python}
+#| output: asis
+from IPython.display import display, Markdown
+
+# Filter for anything that isn't a simple 'PASS'
+issues = [r for r in results if r.get('status') != 'PASS']
+
+if not issues:
+    display(Markdown("✅ **All health checks are nominal.** No immediate actions are required at this time."))
+else:
+    for issue in issues:
+        # Determine the callout color based on status
+        callout_type = "warning" # Orange for WARNING
+        if issue['status'] == 'CRITICAL': 
+            callout_type = "important" # Red for CRITICAL
+        
+        # Build the dynamic callout block as seen in your screenshot
+        md_block = f"""
+::: {{.callout-{callout_type} icon=true}}
+## {issue['name']}
+
+{issue['message']}
+:::
+"""
+        display(Markdown(md_block))
+```

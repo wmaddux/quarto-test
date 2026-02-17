@@ -1,0 +1,27 @@
+
+```{python}
+#| output: false
+%run _setup.qmd
+```
+
+## Executive Summary
+
+```{python}
+#| output: asis
+from IPython.display import display, Markdown
+
+vitals_md = f"""
+{summary_narrative}
+
+### **Cluster Vitals**
+
+| | |
+| :--- | :--- |
+| **Integrity** | {sym_icon} {sym_vitals['message']} |
+| **Capacity** | {cap_icon} {cap_vitals['message']} |
+| **Security** | {sec_icon} {sec_vitals['message']} |
+
+"""
+
+display(Markdown(vitals_md))
+```

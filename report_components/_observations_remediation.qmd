@@ -1,0 +1,52 @@
+
+```{python}
+#| label: setup-obs
+#| output: false
+%run _setup.qmd
+from IPython.display import display, Markdown
+```
+
+## Observations and Remediation
+
+The following items were identified as requiring attention to ensure optimal cluster health, performance, and predictability.
+
+```{python}
+#| label: observations-logic
+#| output: asis
+
+# Filter for anything that isn't a simple 'PASS'
+# This includes WARNING, CRITICAL, and ⚠️ DATA MISSING
+issues = [r for r in results if r.get('status') != 'PASS']
+
+if not issues:
+    display(Markdown("✅ **No issues requiring remediation were detected.** All automated health checks are currently within nominal thresholds."))
+else:
+    for issue in issues:
+        # Map status to Quarto callout types
+        # important = Red (CRITICAL), warning = Orange (WARNING/DATA MISSING)
+        callout_type = "warning"
+        if issue.get('status') == 'CRITICAL': 
+            callout_type = "important"
+        
+        # Determine the header title
+        rule_id = issue.get('id', '??')
+        rule_name = issue.get('name', 'Unknown Rule')
+        status_label = issue.get('status')
+
+        # Build the dynamic callout block
+        md_block = f"""
+::: {{.callout-{callout_type} icon=true}}
+## {rule_id} | {rule_name} ({status_label})
+
+**Observation:**
+{issue.get('message', 'No observation message provided.')}
+
+**Remediation Action:**
+{issue.get('remediation', 'Please consult Aerospike documentation for standard remediation steps for this metric.')}
+:::
+"""
+        display(Markdown(md_block))
+```
+
+---
+
