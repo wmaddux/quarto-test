@@ -6,8 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Aerospike TAM Team">
-<meta name="dcterms.date" content="2026-02-09">
+<meta name="dcterms.date" content="2026-02-18">
 
 <title>Aerospike Health and Performance Report</title>
 <style>
@@ -3834,7 +3833,7 @@ color: white;
 }
 .quarto-title-block .quarto-title-banner {
 color: white;
-background: #141D73;
+background: #1a237e;
 }
 </style>
 <script>/**
@@ -3875,17 +3874,11 @@ if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Config) {window.M
   
   <div class="quarto-title-meta">
 
-      <div>
-      <div class="quarto-title-meta-heading">Author</div>
-      <div class="quarto-title-meta-contents">
-               <p>Aerospike TAM Team </p>
-            </div>
-    </div>
       
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">February 9, 2026</p>
+        <p class="date">February 18, 2026</p>
       </div>
     </div>
     
@@ -3900,19 +3893,15 @@ if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Config) {window.M
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
    
-  <ul>
-  <li><a href="#aerospike-cluster-health-assessment" id="toc-aerospike-cluster-health-assessment" class="nav-link active" data-scroll-target="#aerospike-cluster-health-assessment">Aerospike Cluster Health Assessment</a></li>
-  <li><a href="#executive-summary" id="toc-executive-summary" class="nav-link" data-scroll-target="#executive-summary">Executive Summary</a>
   <ul class="collapse">
+  <li><a href="#aerospike-cluster-health-assessment" id="toc-aerospike-cluster-health-assessment" class="nav-link active" data-scroll-target="#aerospike-cluster-health-assessment">Aerospike Cluster Health Assessment</a>
+  <ul class="collapse">
+  <li><a href="#executive-summary" id="toc-executive-summary" class="nav-link" data-scroll-target="#executive-summary">Executive Summary</a></li>
   <li><a href="#cluster-status-overview" id="toc-cluster-status-overview" class="nav-link" data-scroll-target="#cluster-status-overview">Cluster Status Overview</a></li>
-  </ul></li>
-  <li><a href="#performance-and-utilization" id="toc-performance-and-utilization" class="nav-link" data-scroll-target="#performance-and-utilization">Performance and Utilization</a>
-  <ul class="collapse">
-  <li><a href="#disk-usage-by-node" id="toc-disk-usage-by-node" class="nav-link" data-scroll-target="#disk-usage-by-node">Disk Usage % by Node</a></li>
-  <li><a href="#client-connections" id="toc-client-connections" class="nav-link" data-scroll-target="#client-connections">Client Connections</a></li>
-  </ul></li>
+  <li><a href="#performance-and-utilization" id="toc-performance-and-utilization" class="nav-link" data-scroll-target="#performance-and-utilization">Performance and Utilization</a></li>
   <li><a href="#observations-and-remediation" id="toc-observations-and-remediation" class="nav-link" data-scroll-target="#observations-and-remediation">Observations and Remediation</a></li>
   <li><a href="#appendix-all-tests-performed" id="toc-appendix-all-tests-performed" class="nav-link" data-scroll-target="#appendix-all-tests-performed">Appendix: All Tests Performed</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -3925,7 +3914,36 @@ if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Config) {window.M
 
 <section id="aerospike-cluster-health-assessment" class="level1">
 <h1>Aerospike Cluster Health Assessment</h1>
-<p>This report provides a technical analysis of the <strong>common-aerospike_va7prod</strong> cluster.</p>
+<p>⚡ The cluster is stable but showing signs of <strong>resource pressure</strong>. 3 findings suggest optimization is required.</p>
+<hr>
+<section id="executive-summary" class="level2">
+<h2 class="anchored" data-anchor-id="executive-summary">Executive Summary</h2>
+<p>This diagnostic evaluates the <strong>wizd-dev.asdb-dev-pl203979.azure-nonprod.fmrcloud.com</strong> environment, currently running Aerospike <strong>7.2.0.8</strong> across a <strong>6-node</strong> footprint. Optimized as a <strong>Available/Partition-tolerant (AP) deployment</strong>, the findings below prioritize throughput efficiency and resource headroom.</p>
+<section id="cluster-vitals" class="level3">
+<h3 class="anchored" data-anchor-id="cluster-vitals"><strong>Cluster Vitals</strong></h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Integrity</strong></td>
+<td style="text-align: left;">⚠️ Detected 9 configuration drifts across the cluster.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Capacity</strong></td>
+<td style="text-align: left;">✅ Resource utilization is healthy. Peak consumption is currently 0%.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Security</strong></td>
+<td style="text-align: left;">✅ Connection distribution is healthy. Top user: srvAP156348_INT (54%).</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="cluster-context" class="level3">
+<h3 class="anchored" data-anchor-id="cluster-context">Cluster Context</h3>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 50%">
@@ -3933,46 +3951,67 @@ if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Config) {window.M
 </colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: left;">System Attribute</th>
+<th style="text-align: left;">Attribute</th>
 <th style="text-align: left;">Value</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
+<td style="text-align: left;"><strong>Cluster Name</strong></td>
+<td style="text-align: left;">wizd-dev.asdb-dev-pl203979.azure-nonprod.fmrcloud.com</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;"><strong>Server Version</strong></td>
-<td style="text-align: left;">E-7.2.0.6</td>
+<td style="text-align: left;">7.2.0.8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Cloud Platform</strong></td>
+<td style="text-align: left;">Azure</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><strong>Node Count</strong></td>
-<td style="text-align: left;">3 Nodes</td>
+<td style="text-align: left;">6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Consistency Model</strong></td>
+<td style="text-align: left;">Available/Partition-Tolerant (AP)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Storage Engine</strong></td>
+<td style="text-align: left;">DEVICE/MEMORY</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Index Location</strong></td>
+<td style="text-align: left;">Unknown</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Topology</strong></td>
+<td style="text-align: left;">Standalone</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><strong>Active Features</strong></td>
-<td style="text-align: left;">Batch, Index-on-flash, KVS, PIndex Query, Rack-aware, SIndex Query, Security, UDF, XDR</td>
+<td style="text-align: left;">KVS, PIndex Query, Rack-aware, Security, XDR</td>
 </tr>
 </tbody>
 </table>
 <hr>
 </section>
-<section id="executive-summary" class="level1">
-<h1>Executive Summary</h1>
-<p>This diagnostic evaluates the current state of the <strong>common-aerospike_va7prod</strong> environment. Findings are prioritized by impact on cluster stability.</p>
-<div class="callout callout-style-default callout-note callout-titled">
+</section>
+<section id="cluster-status-overview" class="level2">
+<h2 class="anchored" data-anchor-id="cluster-status-overview">Cluster Status Overview</h2>
+<div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>TAM Assessment Scope
+<span class="screen-reader-only">Warning</span>Network Acceleration Check
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Findings are based on a point-in-time snapshot. Remediation should be tested in a staging environment before production deployment.</p>
+<p>System telemetry (sys_stats) is missing from the bundle.</p>
 </div>
 </div>
-<section id="cluster-status-overview" class="level2">
-<h2 class="anchored" data-anchor-id="cluster-status-overview">Cluster Status Overview</h2>
-<div id="cluster-overview" class="cell" data-execution_count="3">
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -3983,7 +4022,7 @@ if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Config) {window.M
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Detected 31 configuration drifts across the cluster.</p>
+<p>Detected 9 configuration drifts across the cluster.</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-warning callout-titled">
@@ -3992,21 +4031,20 @@ if (window.MathJax && window.MathJax.Hub && window.MathJax.Hub.Config) {window.M
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>Delete Not Found
+<span class="screen-reader-only">Warning</span>Config Drift
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Detected 734,214,682 ‘Delete Not Found’ events across 3 nodes.</p>
-</div>
+<p>The static aerospike.conf file was not found in the collectinfo bundle.</p>
 </div>
 </div>
 </section>
-</section>
-<section id="performance-and-utilization" class="level1">
-<h1>Performance and Utilization</h1>
-<section id="disk-usage-by-node" class="level2">
-<h2 class="anchored" data-anchor-id="disk-usage-by-node">Disk Usage % by Node</h2>
-<div id="cell-disk-chart" class="cell" data-execution_count="4">
+<section id="performance-and-utilization" class="level2">
+<h2 class="anchored" data-anchor-id="performance-and-utilization">Performance and Utilization</h2>
+<section id="disk-usage-by-node" class="level3">
+<h3 class="anchored" data-anchor-id="disk-usage-by-node">Disk Usage % by Node</h3>
+<p>As per <strong>Rule 2.d</strong>, disk utilization is monitored against a <strong>60% High Water Mark (HWM)</strong> to prevent forced evictions.</p>
+<div id="cell-disk-chart" class="cell" data-execution_count="11">
 <div id="disk-chart" class="cell-output cell-output-display">
 <div>            <script>/*
  *  /MathJax.js
@@ -7909,9 +7947,9 @@ maplibre-gl/dist/maplibre-gl.js:
 
 window.Plotly = Plotly;
 return Plotly;
-}));</script>                <div id="1146d864-ddf9-4dcc-b317-64fd8dab441d" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("1146d864-ddf9-4dcc-b317-64fd8dab441d")) {                    Plotly.newPlot(                        "1146d864-ddf9-4dcc-b317-64fd8dab441d",                        [{"alignmentgroup":"True","hovertemplate":"namespace=counter\u003cbr\u003enode_id=%{x}\u003cbr\u003eused_pct=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"counter","marker":{"color":"#636efa","pattern":{"shape":""}},"name":"counter","offsetgroup":"counter","orientation":"v","showlegend":true,"textposition":"auto","x":["10.181.0.24:3000","10.181.0.25:3000","10.181.0.26:3000"],"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAAFEAAAAAAAAAUQAAAAAAAABRA"},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"namespace=dist-counter\u003cbr\u003enode_id=%{x}\u003cbr\u003eused_pct=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"dist-counter","marker":{"color":"#EF553B","pattern":{"shape":""}},"name":"dist-counter","offsetgroup":"dist-counter","orientation":"v","showlegend":true,"textposition":"auto","x":["10.181.0.24:3000","10.181.0.25:3000","10.181.0.26:3000"],"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAACAQEAAAAAAAIBAQAAAAAAAgEBA"},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"namespace=loyalty\u003cbr\u003enode_id=%{x}\u003cbr\u003eused_pct=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"loyalty","marker":{"color":"#00cc96","pattern":{"shape":""}},"name":"loyalty","offsetgroup":"loyalty","orientation":"v","showlegend":true,"textposition":"auto","x":["10.181.0.24:3000","10.181.0.25:3000","10.181.0.26:3000"],"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAA8D8AAAAAAADwPwAAAAAAAPA\u002f"},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"namespace=sms\u003cbr\u003enode_id=%{x}\u003cbr\u003eused_pct=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"sms","marker":{"color":"#ab63fa","pattern":{"shape":""}},"name":"sms","offsetgroup":"sms","orientation":"v","showlegend":true,"textposition":"auto","x":["10.181.0.24:3000","10.181.0.25:3000","10.181.0.26:3000"],"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAAJkAAAAAAAAAmQAAAAAAAACZA"},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"namespace=urlmap\u003cbr\u003enode_id=%{x}\u003cbr\u003eused_pct=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"urlmap","marker":{"color":"#FFA15A","pattern":{"shape":""}},"name":"urlmap","offsetgroup":"urlmap","orientation":"v","showlegend":true,"textposition":"auto","x":["10.181.0.24:3000","10.181.0.25:3000","10.181.0.26:3000"],"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAAEEAAAAAAAAAQQAAAAAAAABBA"},"yaxis":"y","type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"},"margin":{"b":0,"l":0,"r":0,"t":30}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"node_id"},"tickangle":-45},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"used_pct"}},"legend":{"title":{"text":"namespace"},"tracegroupgap":0},"title":{"text":"Disk Usage % by Node"},"barmode":"group","shapes":[{"line":{"color":"red","dash":"dot"},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":60,"y1":60,"yref":"y"}],"annotations":[{"showarrow":false,"text":"HWM (60%)","x":1,"xanchor":"right","xref":"x domain","y":60,"yanchor":"bottom","yref":"y"}]},                        {"responsive": true}                    ).then(function(){
+}));</script>                <div id="7e7d0ef4-dce1-4c52-80b0-b19ff5af9abb" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("7e7d0ef4-dce1-4c52-80b0-b19ff5af9abb")) {                    Plotly.newPlot(                        "7e7d0ef4-dce1-4c52-80b0-b19ff5af9abb",                        [{"alignmentgroup":"True","hovertemplate":"namespace=DBFBC4Cache2\u003cbr\u003enode_id=%{x}\u003cbr\u003eused_pct=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"DBFBC4Cache2","marker":{"color":"#636efa","pattern":{"shape":""}},"name":"DBFBC4Cache2","offsetgroup":"DBFBC4Cache2","orientation":"v","showlegend":true,"textposition":"auto","x":["10.113.110.12:4333","10.113.110.13:4333","10.113.110.14:4333","10.231.81.140:4333","10.231.81.141:4333","10.231.81.142:4333"],"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"namespace=FHBPR_PL000213_DEV\u003cbr\u003enode_id=%{x}\u003cbr\u003eused_pct=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"FHBPR_PL000213_DEV","marker":{"color":"#EF553B","pattern":{"shape":""}},"name":"FHBPR_PL000213_DEV","offsetgroup":"FHBPR_PL000213_DEV","orientation":"v","showlegend":true,"textposition":"auto","x":["10.113.110.12:4333","10.113.110.13:4333","10.113.110.14:4333","10.231.81.140:4333","10.231.81.141:4333","10.231.81.142:4333"],"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"namespace=MDMPR_PL000214_DEV\u003cbr\u003enode_id=%{x}\u003cbr\u003eused_pct=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"MDMPR_PL000214_DEV","marker":{"color":"#00cc96","pattern":{"shape":""}},"name":"MDMPR_PL000214_DEV","offsetgroup":"MDMPR_PL000214_DEV","orientation":"v","showlegend":true,"textposition":"auto","x":["10.113.110.12:4333","10.113.110.13:4333","10.113.110.14:4333","10.231.81.140:4333","10.231.81.141:4333","10.231.81.142:4333"],"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"yaxis":"y","type":"bar"},{"alignmentgroup":"True","hovertemplate":"namespace=wi-fwc\u003cbr\u003enode_id=%{x}\u003cbr\u003eused_pct=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"wi-fwc","marker":{"color":"#ab63fa","pattern":{"shape":""}},"name":"wi-fwc","offsetgroup":"wi-fwc","orientation":"v","showlegend":true,"textposition":"auto","x":["10.113.110.12:4333","10.113.110.13:4333","10.113.110.14:4333","10.231.81.140:4333","10.231.81.141:4333","10.231.81.142:4333"],"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"yaxis":"y","type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"},"margin":{"b":0,"l":0,"r":0,"t":30}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"node_id"},"tickangle":-45},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"used_pct"},"range":[0,75]},"legend":{"title":{"text":"namespace"},"tracegroupgap":0,"orientation":"h","yanchor":"bottom","y":-0.5,"xanchor":"center","x":0.5},"title":{"text":"Disk Usage % by Node"},"barmode":"group","margin":{"b":100},"shapes":[{"line":{"color":"red","dash":"dot"},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":60,"y1":60,"yref":"y"}],"annotations":[{"showarrow":false,"text":"HWM (60%)","x":1,"xanchor":"right","xref":"x domain","y":60,"yanchor":"bottom","yref":"y"}]},                        {"responsive": true}                    ).then(function(){
                             
-var gd = document.getElementById('1146d864-ddf9-4dcc-b317-64fd8dab441d');
+var gd = document.getElementById('7e7d0ef4-dce1-4c52-80b0-b19ff5af9abb');
 var x = new MutationObserver(function (mutations, observer) {{
         var display = window.getComputedStyle(gd).display;
         if (!display || display === 'none') {{
@@ -7936,10 +7974,12 @@ if (outputEl) {{
                         })                };            </script>        </div>
 </div>
 </div>
+<hr>
 </section>
-<section id="client-connections" class="level2">
-<h2 class="anchored" data-anchor-id="client-connections">Client Connections</h2>
-<div id="cell-connections-chart" class="cell" data-execution_count="5">
+<section id="client-connections" class="level3">
+<h3 class="anchored" data-anchor-id="client-connections">Client Connections</h3>
+<p>Rule <strong>6.a</strong> monitors connection distribution. Your current audit shows one user holding a significant monopoly on these resources.</p>
+<div id="cell-connections-chart" class="cell" data-execution_count="12">
 <div id="connections-chart" class="cell-output cell-output-display">
 <div>            <script>/*
  *  /MathJax.js
@@ -11842,9 +11882,9 @@ maplibre-gl/dist/maplibre-gl.js:
 
 window.Plotly = Plotly;
 return Plotly;
-}));</script>                <div id="c798d54a-d4f9-46b1-9327-7513eb528ab7" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("c798d54a-d4f9-46b1-9327-7513eb528ab7")) {                    Plotly.newPlot(                        "c798d54a-d4f9-46b1-9327-7513eb528ab7",                        [{"hovertemplate":"node_id=%{x}\u003cbr\u003evalue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"","marker":{"color":"teal","pattern":{"shape":""}},"name":"","orientation":"v","showlegend":false,"textposition":"auto","x":["10.181.0.24:3000","10.181.0.26:3000","10.181.0.25:3000"],"xaxis":"x","y":{"dtype":"f8","bdata":"AAAAAACgfkAAAAAAAFCEQAAAAAAAQIRA"},"yaxis":"y","type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"},"margin":{"b":0,"l":0,"r":0,"t":30}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"node_id"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"value"}},"legend":{"tracegroupgap":0},"title":{"text":"Client Connections by Node"},"barmode":"relative"},                        {"responsive": true}                    ).then(function(){
+}));</script>                <div id="4b3dabbe-c10e-4993-957b-c048b4504457" class="plotly-graph-div" style="height:525px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("4b3dabbe-c10e-4993-957b-c048b4504457")) {                    Plotly.newPlot(                        "4b3dabbe-c10e-4993-957b-c048b4504457",                        [{"hovertemplate":"node_id=%{x}\u003cbr\u003evalue=%{y}\u003cextra\u003e\u003c\u002fextra\u003e","legendgroup":"","marker":{"color":"teal","pattern":{"shape":""}},"name":"","orientation":"v","showlegend":false,"textposition":"auto","x":["10.113.110.14:4333","10.113.110.12:4333","10.113.110.13:4333","10.231.81.141:4333","10.231.81.142:4333","10.231.81.140:4333"],"xaxis":"x","y":{"dtype":"i1","bdata":"OjEwNTUz"},"yaxis":"y","type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"},"margin":{"b":0,"l":0,"r":0,"t":30}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Node ID"},"tickangle":-45},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"Count"}},"legend":{"tracegroupgap":0},"title":{"text":"Client Connections by Node"},"barmode":"relative","margin":{"b":50}},                        {"responsive": true}                    ).then(function(){
                             
-var gd = document.getElementById('c798d54a-d4f9-46b1-9327-7513eb528ab7');
+var gd = document.getElementById('4b3dabbe-c10e-4993-957b-c048b4504457');
 var x = new MutationObserver(function (mutations, observer) {{
         var display = window.getComputedStyle(gd).display;
         if (!display || display === 'none') {{
@@ -11869,124 +11909,182 @@ if (outputEl) {{
                         })                };            </script>        </div>
 </div>
 </div>
-</section>
-</section>
-<section id="observations-and-remediation" class="level1">
-<h1>Observations and Remediation</h1>
-<div id="observations-remediation" class="cell" data-results="asis" data-execution_count="6">
-<div id="observations-remediation-1" class="cell-output cell-output-display cell-output-markdown">
-<section id="b-ena-support-check" class="level3">
-<h3 class="anchored" data-anchor-id="b-ena-support-check">1.b: ENA Support Check</h3>
-<p>ENA Telemetry Missing: OS-level statistics were not found in this bundle.</p>
-<p><strong>Recommendation:</strong> To retrieve this data, run ‘collectinfo’ as root or use ‘asadm –lsmod –ethtool’. Manually verify with: ‘ethtool -i eth0’.</p>
 <hr>
 </section>
+<section id="hot-key-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="hot-key-analysis">Hot Key Analysis</h3>
+<p>High volumes of <code>fail_key_busy</code> errors indicate extreme write contention on specific records, which can lead to application-level latency and timeouts.</p>
+<div id="cell-hotkey-chart" class="cell" data-execution_count="13">
+<div id="hotkey-chart" class="cell-output cell-output-display cell-output-markdown">
+<blockquote class="blockquote">
+<p>✅ <strong>No active hot key contention</strong> detected in the recent telemetry window.</p>
+</blockquote>
 </div>
-<div id="observations-remediation-2" class="cell-output cell-output-display cell-output-markdown">
-<section id="c-version-consistency" class="level3">
-<h3 class="anchored" data-anchor-id="c-version-consistency">1.c: Version Consistency</h3>
-<p>Telemetry not yet ingested.</p>
-<p><strong>Recommendation:</strong> Review telemetry.</p>
+</div>
+</section>
+</section>
+<section id="observations-and-remediation" class="level2">
+<h2 class="anchored" data-anchor-id="observations-and-remediation">Observations and Remediation</h2>
+<p>The following items were identified as requiring attention to ensure optimal cluster health, performance, and predictability.</p>
+<div id="observations-logic" class="cell" data-execution_count="15">
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>1.b | Network Acceleration Check (WARNING)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Observation:</strong> System telemetry (sys_stats) is missing from the bundle.</p>
+<p><strong>Remediation Action:</strong> <strong>Why this matters:</strong> Without system-level telemetry, we cannot verify if hardware interrupt queues or optimized network drivers (ENA) are active.</p>
+<p><strong>Action Plan:</strong> 1. Re-run the collection with system metrics enabled: <code>asadm -e &quot;collectinfo&quot;</code>. 2. Ensure the user running the command has permissions to execute <code>ethtool</code>, <code>lsmod</code>, and <code>top</code>. 3. If using Docker, ensure the container has visibility into the host network stack.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>3.a | Config Symmetry (WARNING)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Observation:</strong> Detected 9 configuration drifts across the cluster.</p>
+<p><strong>Remediation Action:</strong> <strong>Why this matters:</strong> Asymmetric configurations create silent bottlenecks and unpredictable behavior.</p>
+<p><strong>Action Plan:</strong> 1. Run <code>asadm -e &#39;conf diff&#39;</code> to pinpoint the remaining differences. 2. Standardize timeouts, thread counts, and memory limits across all nodes.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>3.b | Config Drift (⚠️ DATA MISSING)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Observation:</strong> The static aerospike.conf file was not found in the collectinfo bundle.</p>
+<p><strong>Remediation Action:</strong> <strong>Why this matters:</strong> We cannot compare live settings against your config file if the file wasn’t bundled.</p>
+<p><strong>Action Plan:</strong> 1. Re-run collectinfo and explicitly point to your config file: <code>asadm -e &quot;collectinfo --cf /etc/aerospike/aerospike.conf&quot;</code> 2. If your config is in a custom location, update the path in the command above.</p>
+</div>
+</div>
+</div>
 <hr>
 </section>
-</div>
-<div id="observations-remediation-3" class="cell-output cell-output-display cell-output-markdown">
-<section id="a-config-symmetry" class="level3">
-<h3 class="anchored" data-anchor-id="a-config-symmetry">3.a: Config Symmetry</h3>
-<p>Detected 31 configuration drifts across the cluster.</p>
-<p><strong>Recommendation:</strong> Check the Technical Details section to identify which specific parameters (e.g. memory, timeouts) differ.</p>
-<hr>
-</section>
-</div>
-<div id="observations-remediation-4" class="cell-output cell-output-display cell-output-markdown">
-<section id="b-config-drift" class="level3">
-<h3 class="anchored" data-anchor-id="b-config-drift">3.b: Config Drift</h3>
-<p>The static aerospike.conf file was not found in the collectinfo bundle.</p>
-<p><strong>Recommendation:</strong> Cannot perform drift analysis (Runtime vs. Static). To enable this check in the future, run: ‘asadm -e “collectinfo –cf /etc/aerospike/aerospike.conf”’</p>
-<hr>
-</section>
-</div>
-<div id="observations-remediation-5" class="cell-output cell-output-display cell-output-markdown">
-<section id="b-read-not-found" class="level3">
-<h3 class="anchored" data-anchor-id="b-read-not-found">4.b: Read Not Found</h3>
-<p>Detected 10,590,009,790 ‘Read Not Found’ events. This is often normal for application cache-miss workflows.</p>
-<p><strong>Recommendation:</strong> If the application expects all records to exist, investigate potential expiration or eviction issues.</p>
-<hr>
-</section>
-</div>
-<div id="observations-remediation-6" class="cell-output cell-output-display cell-output-markdown">
-<section id="c-delete-not-found" class="level3">
-<h3 class="anchored" data-anchor-id="c-delete-not-found">4.c: Delete Not Found</h3>
-<p>Detected 734,214,682 ‘Delete Not Found’ events across 3 nodes.</p>
-<p><strong>Recommendation:</strong> This suggests the application is attempting to delete records that do not exist (Blind Deletes). Review application logic.</p>
-<hr>
-</section>
-</div>
-</div>
-</section>
-<section id="appendix-all-tests-performed" class="level1">
-<h1>Appendix: All Tests Performed</h1>
-<div id="cell-test-table" class="cell" data-execution_count="7">
-<div id="test-table" class="cell-output cell-output-display">
-<table class="dataframe table table-hover caption-top table-sm table-striped small" data-border="1">
+<section id="appendix-all-tests-performed" class="level2">
+<h2 class="anchored" data-anchor-id="appendix-all-tests-performed">Appendix: All Tests Performed</h2>
+<p>This inventory lists every diagnostic rule executed during this assessment, providing full transparency into the health checks performed.</p>
+<div id="cell-appendix-table" class="cell" data-execution_count="17">
+<div id="appendix-table" class="cell-output cell-output-display">
+<table class="dataframe table table-striped table-hover caption-top table-sm small" data-border="1">
 <thead>
 <tr class="header">
-<th data-quarto-table-cell-role="th">Check Name</th>
+<th data-quarto-table-cell-role="th">ID</th>
+<th data-quarto-table-cell-role="th">Rule Name</th>
 <th data-quarto-table-cell-role="th">Status</th>
+<th data-quarto-table-cell-role="th">Summary Finding</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>1.a: Service Error Skew</td>
+<td>1.a</td>
+<td>Service Error Skew</td>
 <td>✅ PASS</td>
+<td>No service errors detected across the cluster.</td>
 </tr>
 <tr class="even">
-<td>1.b: ENA Support Check</td>
-<td>⚠️ INFO</td>
-</tr>
-<tr class="odd">
-<td>1.c: Version Consistency</td>
-<td>⚠️ INFO</td>
-</tr>
-<tr class="even">
-<td>2.a: SIndex on Flash</td>
-<td>✅ PASS</td>
-</tr>
-<tr class="odd">
-<td>2.b: Sprig Limit Warning</td>
-<td>✅ PASS</td>
-</tr>
-<tr class="even">
-<td>2.c: Storage Deadlock Risk</td>
-<td>✅ PASS</td>
-</tr>
-<tr class="odd">
-<td>2.d: Disk HWM Check</td>
-<td>✅ PASS</td>
-</tr>
-<tr class="even">
-<td>2.e: Memory HWM Check</td>
-<td>✅ PASS</td>
-</tr>
-<tr class="odd">
-<td>3.a: Config Symmetry</td>
+<td>1.b</td>
+<td>Network Acceleration Check</td>
 <td>⚠️ WARNING</td>
+<td>System telemetry (sys_stats) is missing from the bundle.</td>
+</tr>
+<tr class="odd">
+<td>1.c</td>
+<td>Version Consistency</td>
+<td>✅ PASS</td>
+<td>All 6 nodes are confirmed consistent on Aerospike 7.2.0.8.</td>
 </tr>
 <tr class="even">
-<td>3.b: Config Drift</td>
+<td>2.a</td>
+<td>SIndex on Flash</td>
+<td>✅ PASS</td>
+<td>Secondary indexes are correctly aligned with Primary Index storage (Flash).</td>
+</tr>
+<tr class="odd">
+<td>2.b</td>
+<td>Sprig Limit Warning</td>
+<td>✅ PASS</td>
+<td>Sprig counts are appropriately configured for Flash storage.</td>
+</tr>
+<tr class="even">
+<td>2.c</td>
+<td>Storage Deadlock Risk</td>
+<td>✅ PASS</td>
+<td>No disk-based namespaces detected; storage deadlock not applicable.</td>
+</tr>
+<tr class="odd">
+<td>2.d</td>
+<td>Disk HWM Check</td>
+<td>✅ PASS</td>
+<td>All namespaces are healthy. Peak disk utilization is 0% (Threshold: 60%).</td>
+</tr>
+<tr class="even">
+<td>2.e</td>
+<td>Memory HWM Check</td>
+<td>✅ PASS</td>
+<td>No memory-based namespace metrics found.</td>
+</tr>
+<tr class="odd">
+<td>3.a</td>
+<td>Config Symmetry</td>
+<td>⚠️ WARNING</td>
+<td>Detected 9 configuration drifts across the cluster.</td>
+</tr>
+<tr class="even">
+<td>3.b</td>
+<td>Config Drift</td>
 <td>⚠️ ⚠️ DATA MISSING</td>
+<td>The static aerospike.conf file was not found in the collectinfo bundle.</td>
 </tr>
 <tr class="odd">
-<td>4.a: Hot Key Detection</td>
+<td>4.a</td>
+<td>Hot Key Detection</td>
 <td>✅ PASS</td>
+<td>No &#39;key busy&#39; or transaction contention errors detected in this snapshot.</td>
 </tr>
 <tr class="even">
-<td>4.b: Read Not Found</td>
-<td>⚠️ INFO</td>
+<td>4.b</td>
+<td>Read Not Found Rate</td>
+<td>✅ PASS</td>
+<td>No &#39;Read Not Found&#39; events detected.</td>
 </tr>
 <tr class="odd">
-<td>4.c: Delete Not Found</td>
-<td>⚠️ WARNING</td>
+<td>4.c</td>
+<td>Delete Not Found Rate</td>
+<td>✅ PASS</td>
+<td>No unnecessary delete attempts detected.</td>
+</tr>
+<tr class="even">
+<td>4.f</td>
+<td>Set Object Skew</td>
+<td>✅ PASS</td>
+<td>No set-level object data found to analyze.</td>
+</tr>
+<tr class="odd">
+<td>5.a</td>
+<td>Cluster Capacity Forecast</td>
+<td>✅ PASS</td>
+<td>Resource utilization is healthy. Peak consumption is currently 0%.</td>
+</tr>
+<tr class="even">
+<td>6.a</td>
+<td>Security Connection Audit</td>
+<td>✅ PASS</td>
+<td>Connection distribution is healthy. Top user: srvAP156348_INT (54%).</td>
 </tr>
 </tbody>
 </table>
@@ -11994,10 +12092,11 @@ if (outputEl) {{
 </div>
 <hr>
 <div style="text-align: center; font-size: 0.8em; color: gray;">
-<p><strong>Aerospike Health Analyzer</strong> | Version: 1.3.0 | Generated: 2026-02-09 15:32</p>
+<p><strong>Aerospike Health Analyzer</strong> | Version: 1.6.1 | Generated: 2026-02-18 10:37</p>
 </div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

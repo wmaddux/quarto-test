@@ -1,4 +1,4 @@
-__version__ = "1.4.0"
+__version__ = "1.6.1"
 import tarfile, json, gzip, zipfile, io
 
 def peek():

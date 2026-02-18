@@ -3849,13 +3849,14 @@ background: #141D73;
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#aerospike-health-analyzer-master-rule-catalog-v1.3.0" id="toc-aerospike-health-analyzer-master-rule-catalog-v1.3.0" class="nav-link active" data-scroll-target="#aerospike-health-analyzer-master-rule-catalog-v1.3.0">Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)</a>
+  <li><a href="#aerospike-health-analyzer-master-rule-catalog-v1.6.1" id="toc-aerospike-health-analyzer-master-rule-catalog-v1.6.1" class="nav-link active" data-scroll-target="#aerospike-health-analyzer-master-rule-catalog-v1.6.1">Aerospike Health Analyzer: Master Rule Catalog (v1.6.1)</a>
   <ul class="collapse">
   <li><a href="#node-cluster-health" id="toc-node-cluster-health" class="nav-link" data-scroll-target="#node-cluster-health">1. Node &amp; Cluster Health</a></li>
   <li><a href="#storage-capacity" id="toc-storage-capacity" class="nav-link" data-scroll-target="#storage-capacity">2. Storage &amp; Capacity</a></li>
   <li><a href="#configuration-consistency" id="toc-configuration-consistency" class="nav-link" data-scroll-target="#configuration-consistency">3. Configuration Consistency</a></li>
   <li><a href="#performance-traffic" id="toc-performance-traffic" class="nav-link" data-scroll-target="#performance-traffic">4. Performance &amp; Traffic</a></li>
-  <li><a href="#sizing-licensing" id="toc-sizing-licensing" class="nav-link" data-scroll-target="#sizing-licensing">5. Sizing &amp; Licensing</a></li>
+  <li><a href="#sizing-capacity" id="toc-sizing-capacity" class="nav-link" data-scroll-target="#sizing-capacity">5. Sizing &amp; Capacity</a></li>
+  <li><a href="#security-access-control" id="toc-security-access-control" class="nav-link" data-scroll-target="#security-access-control">6. Security &amp; Access Control</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -3866,49 +3867,63 @@ background: #141D73;
 
 
 
-<section id="aerospike-health-analyzer-master-rule-catalog-v1.3.0" class="level1">
-<h1>Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)</h1>
-<p>This catalog tracks the health check logic implemented in the analyzer. Status is updated based on the current baseline.</p>
+<section id="aerospike-health-analyzer-master-rule-catalog-v1.6.1" class="level1">
+<h1>Aerospike Health Analyzer: Master Rule Catalog (v1.6.1)</h1>
+<p>[cite_start]This catalog defines the logic used to evaluate cluster health, automating the detection of recurring issue patterns to enable proactive support[cite: 3, 6, 7].</p>
 <section id="node-cluster-health" class="level2">
 <h2 class="anchored" data-anchor-id="node-cluster-health">1. Node &amp; Cluster Health</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
+<col style="width: 19%">
+<col style="width: 19%">
+<col style="width: 23%">
+<col style="width: 19%">
+<col style="width: 19%">
 </colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: left;">ID</th>
 <th style="text-align: left;">Rule Name</th>
-<th style="text-align: left;">Implementation File</th>
-<th style="text-align: left;">Status</th>
-<th style="text-align: left;">Description</th>
+<th style="text-align: center;">Implemented</th>
+<th style="text-align: left;">Decision Threshold</th>
+<th style="text-align: left;">Remediation (Why &amp; Action)</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">1.a</td>
-<td style="text-align: left;">Service Error Skew</td>
-<td style="text-align: left;"><code>service_error_skew_check.py</code></td>
-<td style="text-align: left;">✅ Implemented</td>
-<td style="text-align: left;">Checks for uneven distribution of errors across nodes.</td>
+<td style="text-align: left;"><strong>1.a</strong></td>
+<td style="text-align: left;"><strong>Service Error Skew</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;">Node error count &gt; 20% deviation.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> One node is failing more than peers [cite: 16][cite_start].<br><strong>Action:</strong> Check node logs and network stats[cite: 16, 46].</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1.b</td>
-<td style="text-align: left;">ENA Support Check</td>
-<td style="text-align: left;"><code>ena_support_check.py</code></td>
-<td style="text-align: left;">✅ Implemented</td>
-<td style="text-align: left;">Validates ENA for AWS or provides guidance if telemetry is missing.</td>
+<td style="text-align: left;"><strong>1.b</strong></td>
+<td style="text-align: left;"><strong>Network Acceleration</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;"><strong>CRITICAL:</strong> Driver not found.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> High-speed networking (ENA/gVNIC) is unverified [cite: 16][cite_start].<br><strong>Action:</strong> Run <code>ethtool -i eth0</code>[cite: 79].</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1.c</td>
-<td style="text-align: left;">Version Consistency</td>
-<td style="text-align: left;"><code>version_consistency_check.py</code></td>
-<td style="text-align: left;">✅ Implemented</td>
-<td style="text-align: left;">Ensures all nodes are running the same Aerospike build/version.</td>
+<td style="text-align: left;"><strong>1.c</strong></td>
+<td style="text-align: left;"><strong>Version Consistency</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;">Multiple <code>asd_build</code> versions found.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Version gaps cause unpredictable behavior [cite: 20, 78][cite_start].<br><strong>Action:</strong> Complete rolling upgrade[cite: 20].</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>1.e</strong></td>
+<td style="text-align: left;"><strong>THP Status</strong></td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: left;">THP is enabled.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Transparent Huge Pages cause latency spikes [cite: 85][cite_start].<br><strong>Action:</strong> Disable THP at the OS level[cite: 85].</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>1.f</strong></td>
+<td style="text-align: left;"><strong>Clock Skew</strong></td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: left;"><code>cluster_clock_skew</code> &gt; 0.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Prevents nodes being kicked or TTL drift [cite: 80][cite_start].<br><strong>Action:</strong> Synchronize NTP/Chrony[cite: 80].</td>
 </tr>
 </tbody>
 </table>
@@ -3917,56 +3932,70 @@ background: #141D73;
 <h2 class="anchored" data-anchor-id="storage-capacity">2. Storage &amp; Capacity</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
+<col style="width: 19%">
+<col style="width: 19%">
+<col style="width: 23%">
+<col style="width: 19%">
+<col style="width: 19%">
 </colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: left;">ID</th>
 <th style="text-align: left;">Rule Name</th>
-<th style="text-align: left;">Implementation File</th>
-<th style="text-align: left;">Status</th>
-<th style="text-align: left;">Description</th>
+<th style="text-align: center;">Implemented</th>
+<th style="text-align: left;">Decision Threshold</th>
+<th style="text-align: left;">Remediation (Why &amp; Action)</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">2.a</td>
-<td style="text-align: left;">Secondary Index Flash</td>
-<td style="text-align: left;"><code>sindex_on_flash_check.py</code></td>
-<td style="text-align: left;">✅ Implemented</td>
-<td style="text-align: left;">Checks if Sindex is optimized when stored on Flash.</td>
+<td style="text-align: left;"><strong>2.a</strong></td>
+<td style="text-align: left;"><strong>SIndex on Flash</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;"><code>index-type</code> flash with default sub-configs.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Requires tuning to prevent disk wear [cite: 9, 16][cite_start].<br><strong>Action:</strong> Adjust <code>mounts</code> and <code>write-block-size</code>[cite: 16].</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2.b</td>
-<td style="text-align: left;">Sprig Limit Warning</td>
-<td style="text-align: left;"><code>sprig_limit_check.py</code></td>
-<td style="text-align: left;">✅ Implemented</td>
-<td style="text-align: left;">Monitors if Primary Index sprigs are nearing the 7.2 limits.</td>
+<td style="text-align: left;"><strong>2.b</strong></td>
+<td style="text-align: left;"><strong>Sprig Limit</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;">Object count vs. sprigs ratio &gt; 1:256.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Too few sprigs cause slow record lookups [cite: 79][cite_start].<br><strong>Action:</strong> Increase <code>partition-tree-sprigs</code> (requires restart)[cite: 79].</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2.c</td>
-<td style="text-align: left;">Storage Deadlock Check</td>
-<td style="text-align: left;"><code>storage_deadlock_check.py</code></td>
-<td style="text-align: left;">✅ Implemented</td>
-<td style="text-align: left;">Audits HWM vs Defrag settings to prevent write-blocks.</td>
+<td style="text-align: left;"><strong>2.c</strong></td>
+<td style="text-align: left;"><strong>Storage Deadlock</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;"><code>data-used-pct</code> within 5% of <code>defrag-lwm-pct</code>.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Node will stop writing before it can defrag [cite: 16, 80][cite_start].<br><strong>Action:</strong> Lower defrag floor or increase quota[cite: 16].</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2.d</td>
-<td style="text-align: left;">Disk HWM Check</td>
-<td style="text-align: left;"><code>hwm_check.py</code></td>
-<td style="text-align: left;">✅ Implemented</td>
-<td style="text-align: left;">Monitors <code>service.data_used_pct</code> against 60% threshold.</td>
+<td style="text-align: left;"><strong>2.d</strong></td>
+<td style="text-align: left;"><strong>Disk HWM Check</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;"><code>data_used_pct</code> &gt; 60%.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Risks forced evictions [cite: 79][cite_start].<br><strong>Action:</strong> Add capacity or adjust TTL policies[cite: 17, 37].</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2.e</td>
-<td style="text-align: left;">Memory HWM Check</td>
-<td style="text-align: left;"><code>memory_hwm_check.py</code></td>
-<td style="text-align: left;">✅ Implemented</td>
-<td style="text-align: left;">Monitors <code>service.system_free_mem_pct</code> against 20% threshold.</td>
+<td style="text-align: left;"><strong>2.e</strong></td>
+<td style="text-align: left;"><strong>Memory HWM Check</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;">System free memory &lt; 20%.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Risks OOM killer stopping the process [cite: 84][cite_start].<br><strong>Action:</strong> Reduce index RAM or upgrade hardware[cite: 17, 35].</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>2.f</strong></td>
+<td style="text-align: left;"><strong>Heap Efficiency</strong></td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: left;"><code>heap-efficiency-pct</code> &lt; 60%.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Detects fragmentation in RAM-heavy clusters [cite: 86][cite_start].<br><strong>Action:</strong> Monitor for <code>sindex</code> or namespace RAM growth[cite: 9, 86].</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>2.g</strong></td>
+<td style="text-align: left;"><strong>NSUP Cycle Lag</strong></td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: left;"><code>nsup_cycle_duration</code> &gt; <code>nsup-period</code>.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Expirations/evictions are falling behind [cite: 83][cite_start].<br><strong>Action:</strong> Increase <code>nsup-threads</code> or <code>nsup-period</code>[cite: 83].</td>
 </tr>
 </tbody>
 </table>
@@ -3975,35 +4004,49 @@ background: #141D73;
 <h2 class="anchored" data-anchor-id="configuration-consistency">3. Configuration Consistency</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
+<col style="width: 19%">
+<col style="width: 19%">
+<col style="width: 23%">
+<col style="width: 19%">
+<col style="width: 19%">
 </colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: left;">ID</th>
 <th style="text-align: left;">Rule Name</th>
-<th style="text-align: left;">Implementation File</th>
-<th style="text-align: left;">Status</th>
-<th style="text-align: left;">Description</th>
+<th style="text-align: center;">Implemented</th>
+<th style="text-align: left;">Decision Threshold</th>
+<th style="text-align: left;">Remediation (Why &amp; Action)</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">3.a</td>
-<td style="text-align: left;">Cross-Node Symmetry</td>
-<td style="text-align: left;"><code>config_symmetry_check.py</code></td>
-<td style="text-align: left;">✅ Implemented</td>
-<td style="text-align: left;">Identifies mismatched configurations across the cluster.</td>
+<td style="text-align: left;"><strong>3.a</strong></td>
+<td style="text-align: left;"><strong>Config Symmetry</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;">Differences in <code>.conf</code> between peer nodes.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Asymmetric nodes create bottlenecks [cite: 16][cite_start].<br><strong>Action:</strong> Synchronize settings across cluster[cite: 16].</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">3.b</td>
-<td style="text-align: left;">Config Drift</td>
-<td style="text-align: left;">—</td>
-<td style="text-align: left;">❌ Not Implemented</td>
-<td style="text-align: left;">Compares live runtime configs against static file configs.</td>
+<td style="text-align: left;"><strong>3.b</strong></td>
+<td style="text-align: left;"><strong>Config Drift</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;">Running value != Config value.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Dynamic changes weren’t saved to disk [cite: 83][cite_start].<br><strong>Action:</strong> Update <code>aerospike.conf</code> to match running values[cite: 83].</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>3.c</strong></td>
+<td style="text-align: left;"><strong>FD Max Capacity</strong></td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: left;"><code>proto-fd-max</code> near limit.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Limits simultaneous client connections [cite: 81][cite_start].<br><strong>Action:</strong> Increase <code>proto-fd-max</code>[cite: 81].</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>3.d</strong></td>
+<td style="text-align: left;"><strong>Min Cluster Size</strong></td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: left;"><code>min-cluster-size</code> is 1.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Risk of data inconsistency in AP split-brain [cite: 83][cite_start].<br><strong>Action:</strong> Set <code>min-cluster-size</code> &gt; 1[cite: 83].</td>
 </tr>
 </tbody>
 </table>
@@ -4012,105 +4055,128 @@ background: #141D73;
 <h2 class="anchored" data-anchor-id="performance-traffic">4. Performance &amp; Traffic</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
+<col style="width: 19%">
+<col style="width: 19%">
+<col style="width: 23%">
+<col style="width: 19%">
+<col style="width: 19%">
 </colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: left;">ID</th>
 <th style="text-align: left;">Rule Name</th>
-<th style="text-align: left;">Implementation File</th>
-<th style="text-align: left;">Status</th>
-<th style="text-align: left;">Description</th>
+<th style="text-align: center;">Implemented</th>
+<th style="text-align: left;">Decision Threshold</th>
+<th style="text-align: left;">Remediation (Why &amp; Action)</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">4.a</td>
-<td style="text-align: left;">Hot Key Detection</td>
-<td style="text-align: left;"><code>hot_key_check.py</code></td>
-<td style="text-align: left;">✅ Implemented</td>
-<td style="text-align: left;">Detects “Key Busy” errors indicating high-contention keys.</td>
+<td style="text-align: left;"><strong>4.a</strong></td>
+<td style="text-align: left;"><strong>Hot Key Detection</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;"><code>fail_key_busy</code> &gt; 100/sec.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Clients fighting for the same record [cite: 18, 79][cite_start].<br><strong>Action:</strong> Implement client-side caching[cite: 18, 79].</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4.b</td>
-<td style="text-align: left;">Read Not Found Rate</td>
-<td style="text-align: left;"><code>read_not_found_check.py</code></td>
-<td style="text-align: left;">✅ Implemented</td>
-<td style="text-align: left;">Flags high rates of logical read misses.</td>
+<td style="text-align: left;"><strong>4.b</strong></td>
+<td style="text-align: left;"><strong>Read Not Found</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;"><code>read_not_found</code> &gt; 5% of reads.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> High volume of queries for non-existent keys [cite: 80][cite_start].<br><strong>Action:</strong> Check TTLs or application query logic[cite: 37, 80].</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4.c</td>
-<td style="text-align: left;">Delete Not Found Rate</td>
-<td style="text-align: left;"><code>delete_not_found_check.py</code></td>
-<td style="text-align: left;">✅ Implemented</td>
-<td style="text-align: left;">Flags high rates of logical delete errors.</td>
+<td style="text-align: left;"><strong>4.c</strong></td>
+<td style="text-align: left;"><strong>Delete Not Found</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;"><code>delete_not_found</code> &gt; 1% of deletes.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> App is double-deleting records [cite: 81][cite_start].<br><strong>Action:</strong> Reduce redundant delete overhead[cite: 81].</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4.d</td>
-<td style="text-align: left;">Batch-Index Success</td>
-<td style="text-align: left;">—</td>
-<td style="text-align: left;">❌ Not Implemented</td>
-<td style="text-align: left;">Audits batch-index sub-transaction success rates.</td>
+<td style="text-align: left;"><strong>4.f</strong></td>
+<td style="text-align: left;"><strong>Set Object Skew</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;">Object count deviation &gt; 10% across nodes.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Unbalanced sets cause premature HWM hits [cite: 16, 18][cite_start].<br><strong>Action:</strong> Verify partition distribution[cite: 78].</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4.e</td>
-<td style="text-align: left;">PI Query Latency</td>
-<td style="text-align: left;">—</td>
-<td style="text-align: left;">❌ Not Implemented</td>
-<td style="text-align: left;">Monitors Primary Index query performance.</td>
+<td style="text-align: left;"><strong>4.h</strong></td>
+<td style="text-align: left;"><strong>Cache Read Ratio</strong></td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: left;"><code>cache_read_pct</code> &lt; 90%.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Suboptimal read-page-cache efficiency [cite: 79][cite_start].<br><strong>Action:</strong> Verify <code>read-page-cache</code> is enabled[cite: 79].</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4.f</td>
-<td style="text-align: left;">Set Object Skew</td>
-<td style="text-align: left;">—</td>
-<td style="text-align: left;">❌ Not Implemented</td>
-<td style="text-align: left;">Checks for uneven data distribution at the set level.</td>
+<td style="text-align: left;"><strong>4.i</strong></td>
+<td style="text-align: left;"><strong>Proxy Reads</strong></td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: left;"><code>client_proxy</code> &gt; 1000/sec.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Clients talking to the wrong nodes [cite: 79][cite_start].<br><strong>Action:</strong> Update client partition map policy[cite: 79].</td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="sizing-licensing" class="level2">
-<h2 class="anchored" data-anchor-id="sizing-licensing">5. Sizing &amp; Licensing</h2>
+<section id="sizing-capacity" class="level2">
+<h2 class="anchored" data-anchor-id="sizing-capacity">5. Sizing &amp; Capacity</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
+<col style="width: 19%">
+<col style="width: 19%">
+<col style="width: 23%">
+<col style="width: 19%">
+<col style="width: 19%">
 </colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: left;">ID</th>
 <th style="text-align: left;">Rule Name</th>
-<th style="text-align: left;">Implementation File</th>
-<th style="text-align: left;">Status</th>
-<th style="text-align: left;">Description</th>
+<th style="text-align: center;">Implemented</th>
+<th style="text-align: left;">Decision Threshold</th>
+<th style="text-align: left;">Remediation (Why &amp; Action)</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">5.a</td>
-<td style="text-align: left;">License Usage</td>
-<td style="text-align: left;">—</td>
-<td style="text-align: left;">❌ Not Implemented</td>
-<td style="text-align: left;">Monitors throughput/storage against license limits.</td>
+<td style="text-align: left;"><strong>5.a</strong></td>
+<td style="text-align: left;"><strong>Capacity Forecast</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;">Projected HWM breach &lt; 30 days.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Proactive warning before evictions [cite: 17, 35][cite_start].<br><strong>Action:</strong> Increase node count or expand storage[cite: 17, 35].</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;">5.b</td>
-<td style="text-align: left;">Sizing Capability</td>
-<td style="text-align: left;">—</td>
-<td style="text-align: left;">❌ Not Implemented</td>
-<td style="text-align: left;">Projecting growth based on current ingestion rates.</td>
+</tbody>
+</table>
+</section>
+<section id="security-access-control" class="level2">
+<h2 class="anchored" data-anchor-id="security-access-control">6. Security &amp; Access Control</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 19%">
+<col style="width: 23%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">ID</th>
+<th style="text-align: left;">Rule Name</th>
+<th style="text-align: center;">Implemented</th>
+<th style="text-align: left;">Decision Threshold</th>
+<th style="text-align: left;">Remediation (Why &amp; Action)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>6.a</strong></td>
+<td style="text-align: left;"><strong>Security Connection Audit</strong></td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: left;">User connections &gt; 500/node.</td>
+<td style="text-align: left;">[cite_start]<strong>Why:</strong> Potential connection leak or unauthorized spike [cite: 36, 81][cite_start].<br><strong>Action:</strong> Audit credentials and connection pooling[cite: 36, 81].</td>
 </tr>
 </tbody>
 </table>
 <hr>
-<p><strong>Baseline:</strong> v1.3.0 <strong>Last Updated:</strong> 2026-02-07</p>
+<p><strong>Baseline:</strong> v1.6.1 <strong>Last Updated:</strong> 2026-02-16</p>
 
 
 </section>

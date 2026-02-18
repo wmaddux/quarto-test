@@ -4,14 +4,14 @@
     "href": "report.html",
     "title": "Aerospike Health and Performance Report",
     "section": "",
-    "text": "This report provides a technical analysis of the common-aerospike_va7prod cluster.\n\n\n\n\n\n\n\nSystem Attribute\nValue\n\n\n\n\nServer Version\nE-7.2.0.6\n\n\nNode Count\n3 Nodes\n\n\nActive Features\nBatch, Index-on-flash, KVS, PIndex Query, Rack-aware, SIndex Query, Security, UDF, XDR"
+    "text": "⚡ The cluster is stable but showing signs of resource pressure. 3 findings suggest optimization is required.\n\n\n\nThis diagnostic evaluates the wizd-dev.asdb-dev-pl203979.azure-nonprod.fmrcloud.com environment, currently running Aerospike 7.2.0.8 across a 6-node footprint. Optimized as a Available/Partition-tolerant (AP) deployment, the findings below prioritize throughput efficiency and resource headroom.\n\n\n\n\n\n\n\n\n\nIntegrity\n⚠️ Detected 9 configuration drifts across the cluster.\n\n\nCapacity\n✅ Resource utilization is healthy. Peak consumption is currently 0%.\n\n\nSecurity\n✅ Connection distribution is healthy. Top user: srvAP156348_INT (54%).\n\n\n\n\n\n\n\n\n\n\n\n\n\nAttribute\nValue\n\n\n\n\nCluster Name\nwizd-dev.asdb-dev-pl203979.azure-nonprod.fmrcloud.com\n\n\nServer Version\n7.2.0.8\n\n\nCloud Platform\nAzure\n\n\nNode Count\n6\n\n\nConsistency Model\nAvailable/Partition-Tolerant (AP)\n\n\nStorage Engine\nDEVICE/MEMORY\n\n\nIndex Location\nUnknown\n\n\nTopology\nStandalone\n\n\nActive Features\nKVS, PIndex Query, Rack-aware, Security, XDR\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nWarningNetwork Acceleration Check\n\n\n\nSystem telemetry (sys_stats) is missing from the bundle.\n\n\n\n\n\n\n\n\nWarningConfig Symmetry\n\n\n\nDetected 9 configuration drifts across the cluster.\n\n\n\n\n\n\n\n\nWarningConfig Drift\n\n\n\nThe static aerospike.conf file was not found in the collectinfo bundle.\n\n\n\n\n\n\n\nAs per Rule 2.d, disk utilization is monitored against a 60% High Water Mark (HWM) to prevent forced evictions.\n\n\n                            \n                                            \n\n\n\n\n\n\nRule 6.a monitors connection distribution. Your current audit shows one user holding a significant monopoly on these resources.\n\n\n                            \n                                            \n\n\n\n\n\n\nHigh volumes of fail_key_busy errors indicate extreme write contention on specific records, which can lead to application-level latency and timeouts.\n\n\n\n✅ No active hot key contention detected in the recent telemetry window.\n\n\n\n\n\n\n\nThe following items were identified as requiring attention to ensure optimal cluster health, performance, and predictability.\n\n\n\n\n\n\n\nWarning1.b | Network Acceleration Check (WARNING)\n\n\n\nObservation: System telemetry (sys_stats) is missing from the bundle.\nRemediation Action: Why this matters: Without system-level telemetry, we cannot verify if hardware interrupt queues or optimized network drivers (ENA) are active.\nAction Plan: 1. Re-run the collection with system metrics enabled: asadm -e \"collectinfo\". 2. Ensure the user running the command has permissions to execute ethtool, lsmod, and top. 3. If using Docker, ensure the container has visibility into the host network stack.\n\n\n\n\n\n\n\n\nWarning3.a | Config Symmetry (WARNING)\n\n\n\nObservation: Detected 9 configuration drifts across the cluster.\nRemediation Action: Why this matters: Asymmetric configurations create silent bottlenecks and unpredictable behavior.\nAction Plan: 1. Run asadm -e 'conf diff' to pinpoint the remaining differences. 2. Standardize timeouts, thread counts, and memory limits across all nodes.\n\n\n\n\n\n\n\n\nWarning3.b | Config Drift (⚠️ DATA MISSING)\n\n\n\nObservation: The static aerospike.conf file was not found in the collectinfo bundle.\nRemediation Action: Why this matters: We cannot compare live settings against your config file if the file wasn’t bundled.\nAction Plan: 1. Re-run collectinfo and explicitly point to your config file: asadm -e \"collectinfo --cf /etc/aerospike/aerospike.conf\" 2. If your config is in a custom location, update the path in the command above.\n\n\n\n\n\n\n\nThis inventory lists every diagnostic rule executed during this assessment, providing full transparency into the health checks performed.\n\n\n\n\n\nID\nRule Name\nStatus\nSummary Finding\n\n\n\n\n1.a\nService Error Skew\n✅ PASS\nNo service errors detected across the cluster.\n\n\n1.b\nNetwork Acceleration Check\n⚠️ WARNING\nSystem telemetry (sys_stats) is missing from the bundle.\n\n\n1.c\nVersion Consistency\n✅ PASS\nAll 6 nodes are confirmed consistent on Aerospike 7.2.0.8.\n\n\n2.a\nSIndex on Flash\n✅ PASS\nSecondary indexes are correctly aligned with Primary Index storage (Flash).\n\n\n2.b\nSprig Limit Warning\n✅ PASS\nSprig counts are appropriately configured for Flash storage.\n\n\n2.c\nStorage Deadlock Risk\n✅ PASS\nNo disk-based namespaces detected; storage deadlock not applicable.\n\n\n2.d\nDisk HWM Check\n✅ PASS\nAll namespaces are healthy. Peak disk utilization is 0% (Threshold: 60%).\n\n\n2.e\nMemory HWM Check\n✅ PASS\nNo memory-based namespace metrics found.\n\n\n3.a\nConfig Symmetry\n⚠️ WARNING\nDetected 9 configuration drifts across the cluster.\n\n\n3.b\nConfig Drift\n⚠️ ⚠️ DATA MISSING\nThe static aerospike.conf file was not found in the collectinfo bundle.\n\n\n4.a\nHot Key Detection\n✅ PASS\nNo 'key busy' or transaction contention errors detected in this snapshot.\n\n\n4.b\nRead Not Found Rate\n✅ PASS\nNo 'Read Not Found' events detected.\n\n\n4.c\nDelete Not Found Rate\n✅ PASS\nNo unnecessary delete attempts detected.\n\n\n4.f\nSet Object Skew\n✅ PASS\nNo set-level object data found to analyze.\n\n\n5.a\nCluster Capacity Forecast\n✅ PASS\nResource utilization is healthy. Peak consumption is currently 0%.\n\n\n6.a\nSecurity Connection Audit\n✅ PASS\nConnection distribution is healthy. Top user: srvAP156348_INT (54%).\n\n\n\n\n\n\n\nAerospike Health Analyzer | Version: 1.6.1 | Generated: 2026-02-18 10:37"
   },
   {
     "objectID": "report.html#cluster-status-overview",
     "href": "report.html#cluster-status-overview",
     "title": "Aerospike Health and Performance Report",
-    "section": "Cluster Status Overview",
-    "text": "Cluster Status Overview\n\n\n\n\n\n\n\nWarningConfig Symmetry\n\n\n\nDetected 31 configuration drifts across the cluster.\n\n\n\n\n\n\n\n\nWarningDelete Not Found\n\n\n\nDetected 734,214,682 ‘Delete Not Found’ events across 3 nodes."
+    "section": "",
+    "text": "WarningNetwork Acceleration Check\n\n\n\nSystem telemetry (sys_stats) is missing from the bundle.\n\n\n\n\n\n\n\n\nWarningConfig Symmetry\n\n\n\nDetected 9 configuration drifts across the cluster.\n\n\n\n\n\n\n\n\nWarningConfig Drift\n\n\n\nThe static aerospike.conf file was not found in the collectinfo bundle."
   },
   {
     "objectID": "report.html#disk-usage-by-node",
@@ -72,51 +72,51 @@
   {
     "objectID": "CATALOG.html",
     "href": "CATALOG.html",
-    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.6.1)",
     "section": "",
-    "text": "This catalog tracks the health check logic implemented in the analyzer. Status is updated based on the current baseline.\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n1.a\nService Error Skew\nservice_error_skew_check.py\n✅ Implemented\nChecks for uneven distribution of errors across nodes.\n\n\n1.b\nENA Support Check\nena_support_check.py\n✅ Implemented\nValidates ENA for AWS or provides guidance if telemetry is missing.\n\n\n1.c\nVersion Consistency\nversion_consistency_check.py\n✅ Implemented\nEnsures all nodes are running the same Aerospike build/version.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n2.a\nSecondary Index Flash\nsindex_on_flash_check.py\n✅ Implemented\nChecks if Sindex is optimized when stored on Flash.\n\n\n2.b\nSprig Limit Warning\nsprig_limit_check.py\n✅ Implemented\nMonitors if Primary Index sprigs are nearing the 7.2 limits.\n\n\n2.c\nStorage Deadlock Check\nstorage_deadlock_check.py\n✅ Implemented\nAudits HWM vs Defrag settings to prevent write-blocks.\n\n\n2.d\nDisk HWM Check\nhwm_check.py\n✅ Implemented\nMonitors service.data_used_pct against 60% threshold.\n\n\n2.e\nMemory HWM Check\nmemory_hwm_check.py\n✅ Implemented\nMonitors service.system_free_mem_pct against 20% threshold.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n3.a\nCross-Node Symmetry\nconfig_symmetry_check.py\n✅ Implemented\nIdentifies mismatched configurations across the cluster.\n\n\n3.b\nConfig Drift\n—\n❌ Not Implemented\nCompares live runtime configs against static file configs.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n4.a\nHot Key Detection\nhot_key_check.py\n✅ Implemented\nDetects “Key Busy” errors indicating high-contention keys.\n\n\n4.b\nRead Not Found Rate\nread_not_found_check.py\n✅ Implemented\nFlags high rates of logical read misses.\n\n\n4.c\nDelete Not Found Rate\ndelete_not_found_check.py\n✅ Implemented\nFlags high rates of logical delete errors.\n\n\n4.d\nBatch-Index Success\n—\n❌ Not Implemented\nAudits batch-index sub-transaction success rates.\n\n\n4.e\nPI Query Latency\n—\n❌ Not Implemented\nMonitors Primary Index query performance.\n\n\n4.f\nSet Object Skew\n—\n❌ Not Implemented\nChecks for uneven data distribution at the set level.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n5.a\nLicense Usage\n—\n❌ Not Implemented\nMonitors throughput/storage against license limits.\n\n\n5.b\nSizing Capability\n—\n❌ Not Implemented\nProjecting growth based on current ingestion rates.\n\n\n\n\nBaseline: v1.3.0 Last Updated: 2026-02-07"
+    "text": "[cite_start]This catalog defines the logic used to evaluate cluster health, automating the detection of recurring issue patterns to enable proactive support[cite: 3, 6, 7].\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplemented\nDecision Threshold\nRemediation (Why & Action)\n\n\n\n\n1.a\nService Error Skew\n✅\nNode error count &gt; 20% deviation.\n[cite_start]Why: One node is failing more than peers [cite: 16][cite_start].Action: Check node logs and network stats[cite: 16, 46].\n\n\n1.b\nNetwork Acceleration\n✅\nCRITICAL: Driver not found.\n[cite_start]Why: High-speed networking (ENA/gVNIC) is unverified [cite: 16][cite_start].Action: Run ethtool -i eth0[cite: 79].\n\n\n1.c\nVersion Consistency\n✅\nMultiple asd_build versions found.\n[cite_start]Why: Version gaps cause unpredictable behavior [cite: 20, 78][cite_start].Action: Complete rolling upgrade[cite: 20].\n\n\n1.e\nTHP Status\n❌\nTHP is enabled.\n[cite_start]Why: Transparent Huge Pages cause latency spikes [cite: 85][cite_start].Action: Disable THP at the OS level[cite: 85].\n\n\n1.f\nClock Skew\n❌\ncluster_clock_skew &gt; 0.\n[cite_start]Why: Prevents nodes being kicked or TTL drift [cite: 80][cite_start].Action: Synchronize NTP/Chrony[cite: 80].\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplemented\nDecision Threshold\nRemediation (Why & Action)\n\n\n\n\n2.a\nSIndex on Flash\n✅\nindex-type flash with default sub-configs.\n[cite_start]Why: Requires tuning to prevent disk wear [cite: 9, 16][cite_start].Action: Adjust mounts and write-block-size[cite: 16].\n\n\n2.b\nSprig Limit\n✅\nObject count vs. sprigs ratio &gt; 1:256.\n[cite_start]Why: Too few sprigs cause slow record lookups [cite: 79][cite_start].Action: Increase partition-tree-sprigs (requires restart)[cite: 79].\n\n\n2.c\nStorage Deadlock\n✅\ndata-used-pct within 5% of defrag-lwm-pct.\n[cite_start]Why: Node will stop writing before it can defrag [cite: 16, 80][cite_start].Action: Lower defrag floor or increase quota[cite: 16].\n\n\n2.d\nDisk HWM Check\n✅\ndata_used_pct &gt; 60%.\n[cite_start]Why: Risks forced evictions [cite: 79][cite_start].Action: Add capacity or adjust TTL policies[cite: 17, 37].\n\n\n2.e\nMemory HWM Check\n✅\nSystem free memory &lt; 20%.\n[cite_start]Why: Risks OOM killer stopping the process [cite: 84][cite_start].Action: Reduce index RAM or upgrade hardware[cite: 17, 35].\n\n\n2.f\nHeap Efficiency\n❌\nheap-efficiency-pct &lt; 60%.\n[cite_start]Why: Detects fragmentation in RAM-heavy clusters [cite: 86][cite_start].Action: Monitor for sindex or namespace RAM growth[cite: 9, 86].\n\n\n2.g\nNSUP Cycle Lag\n❌\nnsup_cycle_duration &gt; nsup-period.\n[cite_start]Why: Expirations/evictions are falling behind [cite: 83][cite_start].Action: Increase nsup-threads or nsup-period[cite: 83].\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplemented\nDecision Threshold\nRemediation (Why & Action)\n\n\n\n\n3.a\nConfig Symmetry\n✅\nDifferences in .conf between peer nodes.\n[cite_start]Why: Asymmetric nodes create bottlenecks [cite: 16][cite_start].Action: Synchronize settings across cluster[cite: 16].\n\n\n3.b\nConfig Drift\n✅\nRunning value != Config value.\n[cite_start]Why: Dynamic changes weren’t saved to disk [cite: 83][cite_start].Action: Update aerospike.conf to match running values[cite: 83].\n\n\n3.c\nFD Max Capacity\n❌\nproto-fd-max near limit.\n[cite_start]Why: Limits simultaneous client connections [cite: 81][cite_start].Action: Increase proto-fd-max[cite: 81].\n\n\n3.d\nMin Cluster Size\n❌\nmin-cluster-size is 1.\n[cite_start]Why: Risk of data inconsistency in AP split-brain [cite: 83][cite_start].Action: Set min-cluster-size &gt; 1[cite: 83].\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplemented\nDecision Threshold\nRemediation (Why & Action)\n\n\n\n\n4.a\nHot Key Detection\n✅\nfail_key_busy &gt; 100/sec.\n[cite_start]Why: Clients fighting for the same record [cite: 18, 79][cite_start].Action: Implement client-side caching[cite: 18, 79].\n\n\n4.b\nRead Not Found\n✅\nread_not_found &gt; 5% of reads.\n[cite_start]Why: High volume of queries for non-existent keys [cite: 80][cite_start].Action: Check TTLs or application query logic[cite: 37, 80].\n\n\n4.c\nDelete Not Found\n✅\ndelete_not_found &gt; 1% of deletes.\n[cite_start]Why: App is double-deleting records [cite: 81][cite_start].Action: Reduce redundant delete overhead[cite: 81].\n\n\n4.f\nSet Object Skew\n✅\nObject count deviation &gt; 10% across nodes.\n[cite_start]Why: Unbalanced sets cause premature HWM hits [cite: 16, 18][cite_start].Action: Verify partition distribution[cite: 78].\n\n\n4.h\nCache Read Ratio\n❌\ncache_read_pct &lt; 90%.\n[cite_start]Why: Suboptimal read-page-cache efficiency [cite: 79][cite_start].Action: Verify read-page-cache is enabled[cite: 79].\n\n\n4.i\nProxy Reads\n❌\nclient_proxy &gt; 1000/sec.\n[cite_start]Why: Clients talking to the wrong nodes [cite: 79][cite_start].Action: Update client partition map policy[cite: 79].\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplemented\nDecision Threshold\nRemediation (Why & Action)\n\n\n\n\n5.a\nCapacity Forecast\n✅\nProjected HWM breach &lt; 30 days.\n[cite_start]Why: Proactive warning before evictions [cite: 17, 35][cite_start].Action: Increase node count or expand storage[cite: 17, 35].\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nID\nRule Name\nImplemented\nDecision Threshold\nRemediation (Why & Action)\n\n\n\n\n6.a\nSecurity Connection Audit\n✅\nUser connections &gt; 500/node.\n[cite_start]Why: Potential connection leak or unauthorized spike [cite: 36, 81][cite_start].Action: Audit credentials and connection pooling[cite: 36, 81].\n\n\n\n\nBaseline: v1.6.1 Last Updated: 2026-02-16"
   },
   {
     "objectID": "CATALOG.html#node-cluster-health",
     "href": "CATALOG.html#node-cluster-health",
-    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.6.1)",
     "section": "",
-    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n1.a\nService Error Skew\nservice_error_skew_check.py\n✅ Implemented\nChecks for uneven distribution of errors across nodes.\n\n\n1.b\nENA Support Check\nena_support_check.py\n✅ Implemented\nValidates ENA for AWS or provides guidance if telemetry is missing.\n\n\n1.c\nVersion Consistency\nversion_consistency_check.py\n✅ Implemented\nEnsures all nodes are running the same Aerospike build/version."
+    "text": "ID\nRule Name\nImplemented\nDecision Threshold\nRemediation (Why & Action)\n\n\n\n\n1.a\nService Error Skew\n✅\nNode error count &gt; 20% deviation.\n[cite_start]Why: One node is failing more than peers [cite: 16][cite_start].Action: Check node logs and network stats[cite: 16, 46].\n\n\n1.b\nNetwork Acceleration\n✅\nCRITICAL: Driver not found.\n[cite_start]Why: High-speed networking (ENA/gVNIC) is unverified [cite: 16][cite_start].Action: Run ethtool -i eth0[cite: 79].\n\n\n1.c\nVersion Consistency\n✅\nMultiple asd_build versions found.\n[cite_start]Why: Version gaps cause unpredictable behavior [cite: 20, 78][cite_start].Action: Complete rolling upgrade[cite: 20].\n\n\n1.e\nTHP Status\n❌\nTHP is enabled.\n[cite_start]Why: Transparent Huge Pages cause latency spikes [cite: 85][cite_start].Action: Disable THP at the OS level[cite: 85].\n\n\n1.f\nClock Skew\n❌\ncluster_clock_skew &gt; 0.\n[cite_start]Why: Prevents nodes being kicked or TTL drift [cite: 80][cite_start].Action: Synchronize NTP/Chrony[cite: 80]."
   },
   {
     "objectID": "CATALOG.html#storage-capacity",
     "href": "CATALOG.html#storage-capacity",
-    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.6.1)",
     "section": "",
-    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n2.a\nSecondary Index Flash\nsindex_on_flash_check.py\n✅ Implemented\nChecks if Sindex is optimized when stored on Flash.\n\n\n2.b\nSprig Limit Warning\nsprig_limit_check.py\n✅ Implemented\nMonitors if Primary Index sprigs are nearing the 7.2 limits.\n\n\n2.c\nStorage Deadlock Check\nstorage_deadlock_check.py\n✅ Implemented\nAudits HWM vs Defrag settings to prevent write-blocks.\n\n\n2.d\nDisk HWM Check\nhwm_check.py\n✅ Implemented\nMonitors service.data_used_pct against 60% threshold.\n\n\n2.e\nMemory HWM Check\nmemory_hwm_check.py\n✅ Implemented\nMonitors service.system_free_mem_pct against 20% threshold."
+    "text": "ID\nRule Name\nImplemented\nDecision Threshold\nRemediation (Why & Action)\n\n\n\n\n2.a\nSIndex on Flash\n✅\nindex-type flash with default sub-configs.\n[cite_start]Why: Requires tuning to prevent disk wear [cite: 9, 16][cite_start].Action: Adjust mounts and write-block-size[cite: 16].\n\n\n2.b\nSprig Limit\n✅\nObject count vs. sprigs ratio &gt; 1:256.\n[cite_start]Why: Too few sprigs cause slow record lookups [cite: 79][cite_start].Action: Increase partition-tree-sprigs (requires restart)[cite: 79].\n\n\n2.c\nStorage Deadlock\n✅\ndata-used-pct within 5% of defrag-lwm-pct.\n[cite_start]Why: Node will stop writing before it can defrag [cite: 16, 80][cite_start].Action: Lower defrag floor or increase quota[cite: 16].\n\n\n2.d\nDisk HWM Check\n✅\ndata_used_pct &gt; 60%.\n[cite_start]Why: Risks forced evictions [cite: 79][cite_start].Action: Add capacity or adjust TTL policies[cite: 17, 37].\n\n\n2.e\nMemory HWM Check\n✅\nSystem free memory &lt; 20%.\n[cite_start]Why: Risks OOM killer stopping the process [cite: 84][cite_start].Action: Reduce index RAM or upgrade hardware[cite: 17, 35].\n\n\n2.f\nHeap Efficiency\n❌\nheap-efficiency-pct &lt; 60%.\n[cite_start]Why: Detects fragmentation in RAM-heavy clusters [cite: 86][cite_start].Action: Monitor for sindex or namespace RAM growth[cite: 9, 86].\n\n\n2.g\nNSUP Cycle Lag\n❌\nnsup_cycle_duration &gt; nsup-period.\n[cite_start]Why: Expirations/evictions are falling behind [cite: 83][cite_start].Action: Increase nsup-threads or nsup-period[cite: 83]."
   },
   {
     "objectID": "CATALOG.html#configuration-consistency",
     "href": "CATALOG.html#configuration-consistency",
-    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.6.1)",
     "section": "",
-    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n3.a\nCross-Node Symmetry\nconfig_symmetry_check.py\n✅ Implemented\nIdentifies mismatched configurations across the cluster.\n\n\n3.b\nConfig Drift\n—\n❌ Not Implemented\nCompares live runtime configs against static file configs."
+    "text": "ID\nRule Name\nImplemented\nDecision Threshold\nRemediation (Why & Action)\n\n\n\n\n3.a\nConfig Symmetry\n✅\nDifferences in .conf between peer nodes.\n[cite_start]Why: Asymmetric nodes create bottlenecks [cite: 16][cite_start].Action: Synchronize settings across cluster[cite: 16].\n\n\n3.b\nConfig Drift\n✅\nRunning value != Config value.\n[cite_start]Why: Dynamic changes weren’t saved to disk [cite: 83][cite_start].Action: Update aerospike.conf to match running values[cite: 83].\n\n\n3.c\nFD Max Capacity\n❌\nproto-fd-max near limit.\n[cite_start]Why: Limits simultaneous client connections [cite: 81][cite_start].Action: Increase proto-fd-max[cite: 81].\n\n\n3.d\nMin Cluster Size\n❌\nmin-cluster-size is 1.\n[cite_start]Why: Risk of data inconsistency in AP split-brain [cite: 83][cite_start].Action: Set min-cluster-size &gt; 1[cite: 83]."
   },
   {
     "objectID": "CATALOG.html#performance-traffic",
     "href": "CATALOG.html#performance-traffic",
-    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.6.1)",
     "section": "",
-    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n4.a\nHot Key Detection\nhot_key_check.py\n✅ Implemented\nDetects “Key Busy” errors indicating high-contention keys.\n\n\n4.b\nRead Not Found Rate\nread_not_found_check.py\n✅ Implemented\nFlags high rates of logical read misses.\n\n\n4.c\nDelete Not Found Rate\ndelete_not_found_check.py\n✅ Implemented\nFlags high rates of logical delete errors.\n\n\n4.d\nBatch-Index Success\n—\n❌ Not Implemented\nAudits batch-index sub-transaction success rates.\n\n\n4.e\nPI Query Latency\n—\n❌ Not Implemented\nMonitors Primary Index query performance.\n\n\n4.f\nSet Object Skew\n—\n❌ Not Implemented\nChecks for uneven data distribution at the set level."
+    "text": "ID\nRule Name\nImplemented\nDecision Threshold\nRemediation (Why & Action)\n\n\n\n\n4.a\nHot Key Detection\n✅\nfail_key_busy &gt; 100/sec.\n[cite_start]Why: Clients fighting for the same record [cite: 18, 79][cite_start].Action: Implement client-side caching[cite: 18, 79].\n\n\n4.b\nRead Not Found\n✅\nread_not_found &gt; 5% of reads.\n[cite_start]Why: High volume of queries for non-existent keys [cite: 80][cite_start].Action: Check TTLs or application query logic[cite: 37, 80].\n\n\n4.c\nDelete Not Found\n✅\ndelete_not_found &gt; 1% of deletes.\n[cite_start]Why: App is double-deleting records [cite: 81][cite_start].Action: Reduce redundant delete overhead[cite: 81].\n\n\n4.f\nSet Object Skew\n✅\nObject count deviation &gt; 10% across nodes.\n[cite_start]Why: Unbalanced sets cause premature HWM hits [cite: 16, 18][cite_start].Action: Verify partition distribution[cite: 78].\n\n\n4.h\nCache Read Ratio\n❌\ncache_read_pct &lt; 90%.\n[cite_start]Why: Suboptimal read-page-cache efficiency [cite: 79][cite_start].Action: Verify read-page-cache is enabled[cite: 79].\n\n\n4.i\nProxy Reads\n❌\nclient_proxy &gt; 1000/sec.\n[cite_start]Why: Clients talking to the wrong nodes [cite: 79][cite_start].Action: Update client partition map policy[cite: 79]."
   },
   {
     "objectID": "CATALOG.html#sizing-licensing",
     "href": "CATALOG.html#sizing-licensing",
-    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.3.0)",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.4.0)",
     "section": "",
-    "text": "ID\nRule Name\nImplementation File\nStatus\nDescription\n\n\n\n\n5.a\nLicense Usage\n—\n❌ Not Implemented\nMonitors throughput/storage against license limits.\n\n\n5.b\nSizing Capability\n—\n❌ Not Implemented\nProjecting growth based on current ingestion rates.\n\n\n\n\nBaseline: v1.3.0 Last Updated: 2026-02-07"
+    "text": "ID\nRule Name\nImplemented\nDecision Threshold\nRemediation (Why & Action)\n\n\n\n\n5.a\nLicense Usage\n❌\nPending\nPending\n\n\n5.b\nSizing Forecast\n❌\nPending\nPending\n\n\n\n\nBaseline: v1.4.0 Last Updated: 2026-02-10"
   },
   {
     "objectID": "RULE-TEMPLATE.html",
     "href": "RULE-TEMPLATE.html",
-    "title": "Aerospike Rule Template",
+    "title": "—————————————————————————–",
     "section": "",
-    "text": "This document provides the standardized template and guidelines for contributing new health check rules to the Aerospike Health and Performance Report. Following this template ensures that your rule integrates seamlessly with the automated reporting engine.\n\n\nUse the following structure for your rule file (e.g., rules/your_check_name.py).\nimport sqlite3\nimport pandas as pd\n\n# --- Metadata ---\n# ID: {X.y} (e.g., 5.a)\n# Title: Descriptive Name\n\ndef run_check(db_path=\"aerospike_health.db\"):\n    \"\"\"\n    Executes the health check against the local SQLite database.\n    \n    Returns:\n        dict: {\n            \"id\": str,          # The unique identifier (e.g., \"5.a\")\n            \"name\": str,        # The display name of the rule\n            \"status\": str,      # PASS, WARNING, CRITICAL, or ⚠️ DATA MISSING\n            \"message\": str,     # Human-readable findings\n            \"remediation\": str  # Specific steps to resolve the issue\n        }\n    \"\"\"\n    conn = sqlite3.connect(db_path)\n    \n    try:\n        # 1. Query Logic\n        # df = pd.read_sql_query(\"SELECT ...\", conn)\n        \n        # 2. Handle Missing Data\n        # if df.empty:\n        #     return {\n        #         \"id\": \"X.y\",\n        #         \"name\": \"Rule Name\",\n        #         \"status\": \"⚠️ DATA MISSING\",\n        #         \"message\": \"Telemetry not found.\",\n        #         \"remediation\": \"Run 'asadm -e info' to collect missing metrics.\"\n        #     }\n        \n        # 3. Success Case\n        return {\n            \"id\": \"X.y\",\n            \"name\": \"Your Rule Name\",\n            \"status\": \"PASS\",\n            \"message\": \"Check completed successfully.\",\n            \"remediation\": \"None required.\"\n        }\n        \n    except Exception as e:\n        return {\n            \"id\": \"X.y\",\n            \"name\": \"Your Rule Name\",\n            \"status\": \"CRITICAL\",\n            \"message\": f\"An error occurred: {str(e)}\",\n            \"remediation\": \"Review logs and database schema.\"\n        }\n    finally:\n        conn.close()\n\n\n\n\nReturn Schema: Every rule must return a dictionary with keys: id, name, status, message, and remediation.\nError Handling: Use try...except...finally to ensure the reporting engine continues running even if a specific rule fails.\nRead-Only: Rules should only read from the database.\n\n\n\n\n\n\n\nStatus\nMeaning\n\n\n\n\nPASS\nHealthy thresholds.\n\n\nWARNING\nThreshold exceeded, but operational.\n\n\nCRITICAL\nRisk of data loss or instability.\n\n\n⚠️ DATA MISSING\nTelemetry lacks required metrics."
+    "text": "import sqlite3 import pandas as pd\n\n—————————————————————————–\n\n\nVERSION STAMP\n\n\nEnsures this rule is compatible with the v1.4.0 Markdown reporting engine.\n\n\n—————————————————————————–\nversion = “1.4.0”\n\n\n— Metadata —\n\n\nID: {X.y} (e.g., 1.a) -&gt; Matches the Aerospike Health Catalog\n\n\nTitle: Descriptive Name for the report table\ndef run_check(db_path=“aerospike_health.db”): conn = sqlite3.connect(db_path)\n# -------------------------------------------------------------------------\n# CONFIGURATION\n# Set your Rule ID and Name here. These appear in the final report.\n# -------------------------------------------------------------------------\ncheck_id = \"X.y\"\ncheck_name = \"Descriptive Rule Name\"\n\ntry:\n    # ---------------------------------------------------------------------\n    # 1. SCHEMA SAFETY CHECK\n    # Before querying, we verify the table exists to prevent a crash if \n    # the ingestor failed or the bundle was incomplete.\n    # ---------------------------------------------------------------------\n    cursor = conn.cursor()\n    target_table = \"node_stats\" # Replace with your required table\n    cursor.execute(f\"SELECT name FROM sqlite_master WHERE type='table' AND name='{target_table}'\")\n    \n    if not cursor.fetchone():\n        return {\n            \"id\": check_id, \"name\": check_name, \"status\": \"⚠️ DATA MISSING\",\n            \"message\": f\"Table '{target_table}' not found in database.\",\n            \"remediation\": \"Verify that the correct Ingestor is enabled in ingest/__init__.py.\"\n        }\n\n    # ---------------------------------------------------------------------\n    # 2. QUERY LOGIC\n    # Use standard SQL. Aim for specific columns rather than SELECT *\n    # to keep the dataframe lightweight.\n    # ---------------------------------------------------------------------\n    query = f\"SELECT node_id, metric, value FROM {target_table} WHERE metric = 'example_metric'\"\n    df = pd.read_sql_query(query, conn)\n    \n    # ---------------------------------------------------------------------\n    # 3. ANALYSIS & RESULTS\n    # Standard PASS/WARNING/CRITICAL logic.\n    # ---------------------------------------------------------------------\n    if df.empty:\n        return {\n            \"id\": check_id, \"name\": check_name, \"status\": \"PASS\",\n            \"message\": \"Healthy state description: e.g., No error skew detected.\",\n            \"remediation\": \"None\"\n        }\n    \n    # Example threshold check (Adjust as needed)\n    threshold = 100\n    findings = df[df['value'] &gt; threshold]\n\n    if not findings.empty:\n        return {\n            \"id\": check_id,\n            \"name\": check_name,\n            \"status\": \"WARNING\", # Or \"CRITICAL\"\n            \"message\": f\"Detected {len(findings)} nodes exceeding threshold {threshold}.\",\n            \"remediation\": (\n                \"**Why this matters:** [Explain the technical impact].\\n\\n\"\n                \"**Action Plan:**\\n\"\n                \"1. Step-by-step resolution using `asadm`.\\n\"\n                \"2. Configuration changes required.\"\n            )\n        }\n\n    # Final default fallback\n    return {\n        \"id\": check_id, \"name\": check_name, \"status\": \"PASS\",\n        \"message\": \"All metrics within normal bounds.\", \"remediation\": \"None\"\n    }\n    \nexcept Exception as e:\n    # Graceful failure: prevents one bad rule from breaking the whole report\n    return {\n        \"id\": check_id, \"name\": check_name, \"status\": \"CRITICAL\",\n        \"message\": f\"Execution Error: {str(e)}\",\n        \"remediation\": \"Review the database schema and rule query logic.\"\n    }\nfinally:\n    conn.close()"
   },
   {
     "objectID": "RULE-TEMPLATE.html#rule-python-template",
@@ -152,5 +152,299 @@
     "title": "Aerospike Health and Performance Report",
     "section": "TAM Assessment Scope",
     "text": "TAM Assessment Scope\nThe findings below are based on a point-in-time snapshot provided in the source bundle. Remediation steps are prioritized by their impact on cluster stability and performance."
+  },
+  {
+    "objectID": "report.html#executive-summary",
+    "href": "report.html#executive-summary",
+    "title": "Aerospike Health and Performance Report",
+    "section": "",
+    "text": "This diagnostic evaluates the wizd-dev.asdb-dev-pl203979.azure-nonprod.fmrcloud.com environment, currently running Aerospike 7.2.0.8 across a 6-node footprint. Optimized as a Available/Partition-tolerant (AP) deployment, the findings below prioritize throughput efficiency and resource headroom.\n\n\n\n\n\n\n\n\n\nIntegrity\n⚠️ Detected 9 configuration drifts across the cluster.\n\n\nCapacity\n✅ Resource utilization is healthy. Peak consumption is currently 0%.\n\n\nSecurity\n✅ Connection distribution is healthy. Top user: srvAP156348_INT (54%).\n\n\n\n\n\n\n\n\n\n\n\n\n\nAttribute\nValue\n\n\n\n\nCluster Name\nwizd-dev.asdb-dev-pl203979.azure-nonprod.fmrcloud.com\n\n\nServer Version\n7.2.0.8\n\n\nCloud Platform\nAzure\n\n\nNode Count\n6\n\n\nConsistency Model\nAvailable/Partition-Tolerant (AP)\n\n\nStorage Engine\nDEVICE/MEMORY\n\n\nIndex Location\nUnknown\n\n\nTopology\nStandalone\n\n\nActive Features\nKVS, PIndex Query, Rack-aware, Security, XDR"
+  },
+  {
+    "objectID": "report.html#set-object-skew",
+    "href": "report.html#set-object-skew",
+    "title": "Aerospike Health and Performance Report",
+    "section": "",
+    "text": "Error: Execution failed on sql ’ SELECT node_id, ns as ns_name, set_name, CAST(value AS REAL) as objects FROM set_stats WHERE metric = ‘objects’ AND set_name != ’’ ’: no such column: metric"
+  },
+  {
+    "objectID": "CATALOG.html#sizing-capacity",
+    "href": "CATALOG.html#sizing-capacity",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.6.1)",
+    "section": "",
+    "text": "ID\nRule Name\nImplemented\nDecision Threshold\nRemediation (Why & Action)\n\n\n\n\n5.a\nCapacity Forecast\n✅\nProjected HWM breach &lt; 30 days.\n[cite_start]Why: Proactive warning before evictions [cite: 17, 35][cite_start].Action: Increase node count or expand storage[cite: 17, 35]."
+  },
+  {
+    "objectID": "report.html#capacity-forecast",
+    "href": "report.html#capacity-forecast",
+    "title": "Aerospike Health and Performance Report",
+    "section": "Capacity Forecast",
+    "text": "Capacity Forecast\n\nCluster Capacity Forecast\nResource utilization is healthy. Peak consumption is currently 33%."
+  },
+  {
+    "objectID": "report.html#security-audit",
+    "href": "report.html#security-audit",
+    "title": "Aerospike Health and Performance Report",
+    "section": "Security Audit",
+    "text": "Security Audit\n\n\n⚠️ Security Connection Audit\nConnection Monopoly: User [countersUser] holds 87% of cluster connections (1554).\nRemediation: Assessment: A single user account monopolizing client connections can lead to ‘Service Unavailable’ errors for other applications and administrative tools (asadm/asinfo).\nAction Plan: 1. Audit the connection pooling configuration for the application using the countersUser account. 2. Ensure client SDKs are using a max connection limit that aligns with the cluster’s proto-fd-max setting. 3. Check for ‘connection leaks’ in long-running application processes."
+  },
+  {
+    "objectID": "report-tmp.html",
+    "href": "report-tmp.html",
+    "title": "Aerospike Health and Performance Report",
+    "section": "",
+    "text": "#| output: false\nimport sqlite3\nimport pandas as pd\nimport plotly.express as px\nimport os\nimport datetime\nfrom IPython.display import display, Markdown, HTML\nimport sys\n\n# --- Import Rules ---\nfrom rules import (\n    error_skew_check, \n    version_consistency_check,\n    network_acceleration_check,\n    deadlock_check,\n    sindex_check,\n    sprigs_check,\n    hwm_check,\n    memory_hwm_check,\n    config_symmetry_check,\n    config_drift_check,\n    hot_key_check,\n    read_not_found_check,\n    delete_not_found_check,\n    set_object_skew_check,\n    capacity_check,\n    security_connection_audit\n)\n\n# --- Baseline Metadata ---\nPROJECT_VERSION = \"1.5.0\"\nGEN_DATE = datetime.datetime.now().strftime(\"%Y-%m-%d %H:%M\")\ndb_path = \"aerospike_health.db\"\n\n# --- 1. Data Retrieval & Metadata ---\ncluster_display = \"Unnamed Cluster\"\nserver_version = \"Unknown\"\nnode_count = 0\nfeature_list = []\nactive_features_str = \"None detected\"\ncloud_platform = \"Unknown\"\nconsistency = \"Unknown\"\nstorage = \"Unknown\"\nidx_type = \"Unknown\"\ntopology = \"Unknown\"\n\nif os.path.exists(db_path):\n    conn = sqlite3.connect(db_path)\n    try:  # Added missing try block\n        meta_df = pd.read_sql_query(\"SELECT * FROM cluster_metadata\", conn)\n        metadata = dict(zip(meta_df['key'], meta_df['value']))\n\n        # Extract the config flavors\n        cluster_display = metadata.get('cluster_name', \"Unnamed Cluster\")\n        cloud_platform = metadata.get('cloud_platform', \"Unknown\")\n        server_version = metadata.get('server_version', \"Unknown\")\n        consistency = metadata.get('consistency_model', \"Unknown\")\n        storage = metadata.get('storage_flavor', \"Unknown\")\n        idx_type = metadata.get('index_flavor', \"Unknown\")\n        topology = metadata.get('topology', \"Unknown\")\n        \n        # Node Count (Fixed Indentation)\n        node_res = pd.read_sql_query(\"SELECT COUNT(DISTINCT node_id) as count FROM node_stats\", conn)\n        node_count = node_res['count'].iloc[0] if not node_res.empty else 0\n\n        # Feature Discovery (Fixed Indentation)\n        features_df = pd.read_sql_query(\"SELECT DISTINCT feature FROM active_features\", conn)\n        feature_list = sorted(features_df['feature'].tolist())\n        active_features_str = \", \".join(feature_list) if feature_list else \"None detected\"\n\n    except Exception as e:\n        print(f\"Error during metadata retrieval: {e}\")\n    finally:\n        conn.close()\n\n# --- 2. Execute Ruleset ---\nresults = [\n    error_skew_check.run_check(),\n    version_consistency_check.run_check(),\n    network_acceleration_check.run_check(),\n    deadlock_check.run_check(),\n    sindex_check.run_check(),\n    sprigs_check.run_check(),\n    hwm_check.run_check(),\n    memory_hwm_check.run_check(),\n    config_symmetry_check.run_check(),\n    config_drift_check.run_check(),\n    hot_key_check.run_check(),\n    read_not_found_check.run_check(),\n    delete_not_found_check.run_check(),\n    set_object_skew_check.run_check(),\n    capacity_check.run_check(),\n    security_connection_audit.run_check()\n]\n\n# Write to stderr so it shows in the VS Code log but stays out of the HTML report\nprint(f\"\\n--- Processed {len(results)} Rules ---\", file=sys.stderr)\nfor r in results:\n    print(f\"[{r['status']}] {r['id']} {r['name']}: {r['message']}\", file=sys.stderr)\n\n# --- 3. Dynamic Narrative Generation ---\ncrit_count = len([r for r in results if r['status'] == 'CRITICAL'])\nwarn_count = len([r for r in results if r['status'] == 'WARNING'])\n\nif crit_count &gt; 0:\n    cluster_assessment = f\"⚠️ This cluster requires **immediate intervention**. {crit_count} critical issues were detected.\"\nelif warn_count &gt; 3:\n    cluster_assessment = f\"⚡ The cluster is stable but showing signs of **resource pressure**. {warn_count} warnings suggest optimization is required.\"\nelse:\n    cluster_assessment = \"✅ The cluster is currently **healthy and operating within optimal parameters**.\"\n\nis_sc = \"Strong Consistency\" in consistency\nmode_name = \"Strong Consistency (SC) deployment\" if is_sc else \"Available/Partition-tolerant (AP) deployment\"\npriority_text = \"partition safety and transaction integrity\" if is_sc else \"throughput efficiency and resource headroom\"\n\nsummary_narrative = (\n    f\"This diagnostic evaluates the **{cluster_display}** environment, currently running Aerospike **{server_version}** \"\n    f\"across a **{node_count}-node** footprint. Optimized as an **{mode_name}**, the findings below prioritize \"\n    f\"{priority_text}.\"\n)\n\nif topology == \"XDR Enabled\":\n    summary_narrative += \" Cross-Datacenter Replication (XDR) is active, adding requirements for inter-cluster bandwidth monitoring.\""
+  },
+  {
+    "objectID": "report-tmp.html#cluster-status-overview",
+    "href": "report-tmp.html#cluster-status-overview",
+    "title": "Aerospike Health and Performance Report",
+    "section": "Cluster Status Overview",
+    "text": "Cluster Status Overview\n#| label: cluster-overview\n#| echo: false\n#| output: asis\n\nfor res in results:\n    if res['status'] in ['CRITICAL', 'WARNING']:\n        status_style = \"danger\" if res['status'] == \"CRITICAL\" else \"warning\"\n        display(Markdown(f\"::: {{.callout-{status_style}}}\\n## {res['name']}\\n{res['message']}\\n:::\\n\"))"
+  },
+  {
+    "objectID": "report-tmp.html#disk-usage-by-node",
+    "href": "report-tmp.html#disk-usage-by-node",
+    "title": "Aerospike Health and Performance Report",
+    "section": "Disk Usage % by Node",
+    "text": "Disk Usage % by Node\n#| label: disk-chart\n#| echo: false\nif os.path.exists(db_path):\n    conn = sqlite3.connect(db_path)\n    query = \"\"\"\n        SELECT node_id, namespace, MAX(value) as used_pct \n        FROM namespace_stats \n        WHERE metric = 'service.data_used_pct' \n        GROUP BY node_id, namespace\n    \"\"\"\n    df_disk = pd.read_sql_query(query, conn)\n    conn.close()\n\n    if not df_disk.empty:\n        fig = px.bar(df_disk, x=\"node_id\", y=\"used_pct\", color=\"namespace\", barmode=\"group\", title=\"Disk Usage % by Node\")\n        \n        # VISUAL FIX: Move legend to bottom\n        fig.update_layout(\n            xaxis_tickangle=-45,\n            legend=dict(\n                orientation=\"h\",\n                yanchor=\"bottom\",\n                y=-0.3,\n                xanchor=\"center\",\n                x=0.5\n            )\n        )\n        \n        fig.add_hline(y=60, line_dash=\"dot\", line_color=\"red\", annotation_text=\"HWM (60%)\")\n        fig.show()"
+  },
+  {
+    "objectID": "report-tmp.html#client-connections",
+    "href": "report-tmp.html#client-connections",
+    "title": "Aerospike Health and Performance Report",
+    "section": "Client Connections",
+    "text": "Client Connections\n#| label: connections-chart\n#| echo: false\nif os.path.exists(db_path):\n    conn = sqlite3.connect(db_path)\n    # Using the service. prefix created by our 7.x modular ingestor\n    query = \"SELECT node_id, value FROM node_stats WHERE metric = 'service.client_connections'\"\n    df = pd.read_sql_query(query, conn)\n    conn.close()\n    if not df.empty:\n        fig = px.bar(df, x='node_id', y='value', title=\"Client Connections by Node\", color_discrete_sequence=['teal'])\n        fig.show()"
+  },
+  {
+    "objectID": "report-tmp.html#capacity-forecast",
+    "href": "report-tmp.html#capacity-forecast",
+    "title": "Aerospike Health and Performance Report",
+    "section": "Capacity Forecast",
+    "text": "Capacity Forecast\n#| label: capacity-section\n#| echo: false\n#| output: asis\n\n# Extract Rule 5.a Result\ncap_res = next((r for r in results if r['id'] in ['5.a', '2.f']), None) \n\nif cap_res:\n    display(Markdown(f\"### {cap_res['name']}\\n\\n{cap_res['message']}\"))\n    if cap_res['status'] != \"PASS\":\n        display(Markdown(f\"\\n**Recommendation:**\\n{cap_res.get('remediation', '')}\"))\nelse:\n    display(Markdown(\"Capacity analysis not available.\"))"
+  },
+  {
+    "objectID": "report-tmp.html#security-audit",
+    "href": "report-tmp.html#security-audit",
+    "title": "Aerospike Health and Performance Report",
+    "section": "Security Audit",
+    "text": "Security Audit\n#| label: security-section\n#| echo: false\n#| output: asis\n\n# Extract Rule 6.a Result\nsec_res = next((r for r in results if r['id'] == '6.a'), None)\nif sec_res:\n    status_icon = \"🔒\" if sec_res['status'] == \"PASS\" else \"⚠️\"\n    display(Markdown(f\"### {status_icon} {sec_res['name']}\\n\\n{sec_res['message']}\"))\n    if sec_res['status'] != \"PASS\":\n        display(Markdown(f\"\\n**Remediation:**\\n{sec_res.get('remediation', '')}\"))\nelse:\n    display(Markdown(\"Security audit telemetry not detected.\"))"
+  },
+  {
+    "objectID": "report2.html",
+    "href": "report2.html",
+    "title": "Aerospike Health and Performance Report",
+    "section": "",
+    "text": "⚡ The cluster is stable but showing signs of resource pressure. 4 warnings suggest optimization is required.\n\n\n\nThis diagnostic evaluates the common-aerospike_va7prod environment, currently running Aerospike 7.2.0.6 across a 3-node footprint. Optimized as a Available/Partition-tolerant (AP) deployment, the findings below prioritize throughput efficiency and resource headroom.\n\n\n\nStatus: Resource utilization is healthy. Peak consumption is currently 33%.\n\n\n\nStatus: Connection Monopoly: User [countersUser] holds 87% of cluster connections (1554).\n\n\n\n\n\n\n\n\n\n\n\n\nAttribute\nValue\n\n\n\n\nCluster Name\ncommon-aerospike_va7prod\n\n\nServer Version\n7.2.0.6\n\n\nCloud Platform\nAzure\n\n\nNode Count\n3\n\n\nConsistency Model\nAvailable/Partition-Tolerant (AP)\n\n\nStorage Engine\nDEVICE\n\n\nIndex Location\nUnknown\n\n\nTopology\nStandalone\n\n\nActive Features\nBatch, Index-on-flash, KVS, PIndex Query, Rack-aware, SIndex Query, Security, UDF, XDR\n\n\n\n\n\n\n\n\n\nNoteWhy this context matters\n\n\n\n\n\nThe active features detected (such as SC, Rack-awareness, or XDR) fundamentally change how Aerospike handles data distribution and consistency. This report tailors its health checks based on the specific architectural flags identified during ingestion.\n\n\n\n\n\n\n\n\n\nNoteTAM Assessment Scope\n\n\n\nFindings are based on a point-in-time snapshot. Remediation should be tested in a staging environment before production deployment.\n\n\n\n\n\n\n\n\n\n\n\n\n\nWarningNetwork Acceleration Check\n\n\n\nSystem telemetry (sys_stats) is missing from the bundle.\n\n\n\n\n\n\n\n\nWarningSprig Limit Warning\n\n\n\nNamespace(s) loyalty (64 sprigs), sms (64 sprigs), counter (64 sprigs), urlmap (64 sprigs), dist-counter (64 sprigs) use Index-on-Flash but have low sprig counts.\n\n\n\n\n\n\n\n\nWarningConfig Symmetry\n\n\n\nDetected 10 configuration drifts across the cluster.\n\n\n\n\n\n\n\n\nWarningSecurity Connection Audit\n\n\n\nConnection Monopoly: User [countersUser] holds 87% of cluster connections (1554)."
+  },
+  {
+    "objectID": "report2.html#executive-summary",
+    "href": "report2.html#executive-summary",
+    "title": "Aerospike Health and Performance Report",
+    "section": "",
+    "text": "This diagnostic evaluates the common-aerospike_va7prod environment, currently running Aerospike 7.2.0.6 across a 3-node footprint. Optimized as a Available/Partition-tolerant (AP) deployment, the findings below prioritize throughput efficiency and resource headroom.\n\n\n\nStatus: Resource utilization is healthy. Peak consumption is currently 33%.\n\n\n\nStatus: Connection Monopoly: User [countersUser] holds 87% of cluster connections (1554).\n\n\n\n\n\n\n\n\n\n\n\n\nAttribute\nValue\n\n\n\n\nCluster Name\ncommon-aerospike_va7prod\n\n\nServer Version\n7.2.0.6\n\n\nCloud Platform\nAzure\n\n\nNode Count\n3\n\n\nConsistency Model\nAvailable/Partition-Tolerant (AP)\n\n\nStorage Engine\nDEVICE\n\n\nIndex Location\nUnknown\n\n\nTopology\nStandalone\n\n\nActive Features\nBatch, Index-on-flash, KVS, PIndex Query, Rack-aware, SIndex Query, Security, UDF, XDR\n\n\n\n\n\n\n\n\n\nNoteWhy this context matters\n\n\n\n\n\nThe active features detected (such as SC, Rack-awareness, or XDR) fundamentally change how Aerospike handles data distribution and consistency. This report tailors its health checks based on the specific architectural flags identified during ingestion.\n\n\n\n\n\n\n\n\n\nNoteTAM Assessment Scope\n\n\n\nFindings are based on a point-in-time snapshot. Remediation should be tested in a staging environment before production deployment."
+  },
+  {
+    "objectID": "report2.html#tam-assessment-scope",
+    "href": "report2.html#tam-assessment-scope",
+    "title": "Aerospike Health and Performance Report",
+    "section": "TAM Assessment Scope",
+    "text": "TAM Assessment Scope\nFindings are based on a point-in-time snapshot. Remediation should be tested in a staging environment before production deployment."
+  },
+  {
+    "objectID": "report2.html#cluster-status-overview",
+    "href": "report2.html#cluster-status-overview",
+    "title": "Aerospike Health and Performance Report",
+    "section": "",
+    "text": "WarningNetwork Acceleration Check\n\n\n\nSystem telemetry (sys_stats) is missing from the bundle.\n\n\n\n\n\n\n\n\nWarningSprig Limit Warning\n\n\n\nNamespace(s) loyalty (64 sprigs), sms (64 sprigs), counter (64 sprigs), urlmap (64 sprigs), dist-counter (64 sprigs) use Index-on-Flash but have low sprig counts.\n\n\n\n\n\n\n\n\nWarningConfig Symmetry\n\n\n\nDetected 10 configuration drifts across the cluster.\n\n\n\n\n\n\n\n\nWarningSecurity Connection Audit\n\n\n\nConnection Monopoly: User [countersUser] holds 87% of cluster connections (1554)."
+  },
+  {
+    "objectID": "report2.html#disk-usage-by-node",
+    "href": "report2.html#disk-usage-by-node",
+    "title": "Aerospike Health and Performance Report",
+    "section": "Disk Usage % by Node",
+    "text": "Disk Usage % by Node"
+  },
+  {
+    "objectID": "report2.html#client-connections",
+    "href": "report2.html#client-connections",
+    "title": "Aerospike Health and Performance Report",
+    "section": "Client Connections",
+    "text": "Client Connections"
+  },
+  {
+    "objectID": "report2.html#capacity-forecast",
+    "href": "report2.html#capacity-forecast",
+    "title": "Aerospike Health and Performance Report",
+    "section": "Capacity Forecast",
+    "text": "Capacity Forecast\nBACKTICKSpython #| label: capacity-section #| echo: false #| output: asis"
+  },
+  {
+    "objectID": "report2.html#security-audit",
+    "href": "report2.html#security-audit",
+    "title": "Aerospike Health and Performance Report",
+    "section": "Security Audit",
+    "text": "Security Audit\nBACKTICKSpython #| label: security-section #| echo: false #| output: asis"
+  },
+  {
+    "objectID": "INGEST-TEMPLATE.html",
+    "href": "INGEST-TEMPLATE.html",
+    "title": "Aerospike Ingestor Template (v1.0.0)",
+    "section": "",
+    "text": "All ingestors must be Class-based and reside in the ingest/ directory. They are responsible for taking a specific slice of the Aerospike JSON telemetry and persisting it to SQLite.\n\n\n\n\nSignature: Must implement run_ingest(self, node_id, node_data, conn, run_id).\nSchema Safety: Must use CREATE TABLE IF NOT EXISTS.\nData Integrity: Must use INSERT OR REPLACE to avoid duplication.\nVersion Stamp: Must include a __version__ string at the top of the file.\n\n\n\n\nimport sqlite3\n\n__version__ = \"1.x.x\"\n\nclass YourMetricIngestor:\n    def run_ingest(self, node_id, node_data, conn, run_id):\n        cursor = conn.cursor()\n        \n        # 1. Ensure Table Exists\n        cursor.execute(\"\"\"\n            CREATE TABLE IF NOT EXISTS your_table (\n                node_id TEXT,\n                metric_name TEXT,\n                value REAL,\n                PRIMARY KEY (node_id, metric_name)\n            )\n        \"\"\")\n        \n        # 2. Extract Data from node_data\n        # Navigate to your specific JSON path (e.g., node_data['as_stat']['...'])\n        target_metrics = node_data.get(\"as_stat\", {}).get(\"target_key\", {})\n        \n        # 3. Persist\n        for key, val in target_metrics.items():\n            cursor.execute(\"\"\"\n                INSERT OR REPLACE INTO your_table (node_id, metric_name, value)\n                VALUES (?, ?, ?)\n            \"\"\", (node_id, key, val))"
+  },
+  {
+    "objectID": "INGEST-TEMPLATE.html#overview",
+    "href": "INGEST-TEMPLATE.html#overview",
+    "title": "Aerospike Ingestor Template (v1.0.0)",
+    "section": "",
+    "text": "All ingestors must be Class-based and reside in the ingest/ directory. They are responsible for taking a specific slice of the Aerospike JSON telemetry and persisting it to SQLite."
+  },
+  {
+    "objectID": "INGEST-TEMPLATE.html#technical-requirements",
+    "href": "INGEST-TEMPLATE.html#technical-requirements",
+    "title": "Aerospike Ingestor Template (v1.0.0)",
+    "section": "",
+    "text": "Signature: Must implement run_ingest(self, node_id, node_data, conn, run_id).\nSchema Safety: Must use CREATE TABLE IF NOT EXISTS.\nData Integrity: Must use INSERT OR REPLACE to avoid duplication.\nVersion Stamp: Must include a __version__ string at the top of the file."
+  },
+  {
+    "objectID": "INGEST-TEMPLATE.html#implementation-pattern",
+    "href": "INGEST-TEMPLATE.html#implementation-pattern",
+    "title": "Aerospike Ingestor Template (v1.0.0)",
+    "section": "",
+    "text": "import sqlite3\n\n__version__ = \"1.x.x\"\n\nclass YourMetricIngestor:\n    def run_ingest(self, node_id, node_data, conn, run_id):\n        cursor = conn.cursor()\n        \n        # 1. Ensure Table Exists\n        cursor.execute(\"\"\"\n            CREATE TABLE IF NOT EXISTS your_table (\n                node_id TEXT,\n                metric_name TEXT,\n                value REAL,\n                PRIMARY KEY (node_id, metric_name)\n            )\n        \"\"\")\n        \n        # 2. Extract Data from node_data\n        # Navigate to your specific JSON path (e.g., node_data['as_stat']['...'])\n        target_metrics = node_data.get(\"as_stat\", {}).get(\"target_key\", {})\n        \n        # 3. Persist\n        for key, val in target_metrics.items():\n            cursor.execute(\"\"\"\n                INSERT OR REPLACE INTO your_table (node_id, metric_name, value)\n                VALUES (?, ?, ?)\n            \"\"\", (node_id, key, val))"
+  },
+  {
+    "objectID": "CATALOG.html#security-access-control",
+    "href": "CATALOG.html#security-access-control",
+    "title": "Aerospike Health Analyzer: Master Rule Catalog (v1.6.1)",
+    "section": "",
+    "text": "ID\nRule Name\nImplemented\nDecision Threshold\nRemediation (Why & Action)\n\n\n\n\n6.a\nSecurity Connection Audit\n✅\nUser connections &gt; 500/node.\n[cite_start]Why: Potential connection leak or unauthorized spike [cite: 36, 81][cite_start].Action: Audit credentials and connection pooling[cite: 36, 81].\n\n\n\n\nBaseline: v1.6.1 Last Updated: 2026-02-16"
+  },
+  {
+    "objectID": "assessment_header.html",
+    "href": "assessment_header.html",
+    "title": "Diagnostic Test: Assessment Header",
+    "section": "",
+    "text": "Aerospike Cluster Health Assessment\n⚡ The cluster is stable but showing signs of resource pressure. 5 findings suggest optimization is required."
+  },
+  {
+    "objectID": "executive_summary.html",
+    "href": "executive_summary.html",
+    "title": "Diagnostic Test: Executive Summary",
+    "section": "",
+    "text": "This diagnostic evaluates the common-aerospike_va7prod environment, currently running Aerospike 7.2.0.6 across a 3-node footprint. Optimized as a Available/Partition-tolerant (AP) deployment, the findings below prioritize throughput efficiency and resource headroom.\n\n\n\n\n\n\n\n\n\n\nIntegrity\n⚠️ Detected 10 configuration drifts across the cluster.\n\n\nCapacity\n✅ Resource utilization is healthy. Peak consumption is currently 33%.\n\n\nSecurity\n⚠️ Connection Monopoly: User [countersUser] holds 87% of cluster connections (1554)."
+  },
+  {
+    "objectID": "executive_summary.html#executive-summary",
+    "href": "executive_summary.html#executive-summary",
+    "title": "Diagnostic Test: Executive Summary",
+    "section": "",
+    "text": "This diagnostic evaluates the common-aerospike_va7prod environment, currently running Aerospike 7.2.0.6 across a 3-node footprint. Optimized as a Available/Partition-tolerant (AP) deployment, the findings below prioritize throughput efficiency and resource headroom.\n\n\n\n\n\n\n\n\n\n\nIntegrity\n⚠️ Detected 10 configuration drifts across the cluster.\n\n\nCapacity\n✅ Resource utilization is healthy. Peak consumption is currently 33%.\n\n\nSecurity\n⚠️ Connection Monopoly: User [countersUser] holds 87% of cluster connections (1554)."
+  },
+  {
+    "objectID": "cluster_context.html",
+    "href": "cluster_context.html",
+    "title": "Diagnostic Test: Cluster Context",
+    "section": "",
+    "text": "Cluster Context\n\n\n\n\n\n\n\nAttribute\nValue\n\n\n\n\nCluster Name\ncommon-aerospike_va7prod\n\n\nServer Version\n7.2.0.6\n\n\nCloud Platform\nAzure\n\n\nNode Count\n3\n\n\nConsistency Model\nAvailable/Partition-Tolerant (AP)\n\n\nStorage Engine\nDEVICE\n\n\nIndex Location\nFlash (All-Flash)\n\n\nTopology\nStandalone\n\n\nActive Features\nBatch, Index-on-flash, KVS, PIndex Query, Rack-aware, SIndex Query, Security, UDF, XDR\n\n\n\n\n\n\n\n\n\nNoteWhy this context matters\n\n\n\n\n\nThe active features detected (such as SC, Rack-awareness, or XDR) fundamentally change how Aerospike handles data distribution and consistency. This report tailors its health checks based on the specific architectural flags identified during ingestion."
+  },
+  {
+    "objectID": "report.html#technical-deep-dive",
+    "href": "report.html#technical-deep-dive",
+    "title": "Aerospike Health and Performance Report",
+    "section": "",
+    "text": "Attribute\nValue\n\n\n\n\nCluster Name\ncommon-aerospike_va7prod\n\n\nServer Version\n7.2.0.6\n\n\nCloud Platform\nAzure\n\n\nNode Count\n3\n\n\nConsistency Model\nAvailable/Partition-Tolerant (AP)\n\n\nStorage Engine\nDEVICE\n\n\nIndex Location\nFlash (All-Flash)\n\n\nTopology\nStandalone\n\n\nActive Features\nBatch, Index-on-flash, KVS, PIndex Query, Rack-aware, SIndex Query, Security, UDF, XDR\n\n\n\n\n\n\n\n\n\nNoteWhy this context matters\n\n\n\n\n\nThe active features detected (such as SC, Rack-awareness, or XDR) fundamentally change how Aerospike handles data distribution and consistency. This report tailors its health checks based on the specific architectural flags identified during ingestion."
+  },
+  {
+    "objectID": "report.html#cluster-context",
+    "href": "report.html#cluster-context",
+    "title": "Diagnostic Test: Status Overview",
+    "section": "### Cluster Context",
+    "text": "### Cluster Context\ntitle: “Diagnostic Test: Cluster Context” format: html: toc: false theme: cosmo execute: echo: false —\n\nCluster Context\n\n\n\n\n\n\n\nAttribute\nValue\n\n\n\n\nCluster Name\ncommon-aerospike_va7prod\n\n\nServer Version\n7.2.0.6\n\n\nCloud Platform\nAzure\n\n\nNode Count\n3\n\n\nConsistency Model\nAvailable/Partition-Tolerant (AP)\n\n\nStorage Engine\nDEVICE\n\n\nIndex Location\nFlash (All-Flash)\n\n\nTopology\nStandalone\n\n\nActive Features\nBatch, Index-on-flash, KVS, PIndex Query, Rack-aware, SIndex Query, Security, UDF, XDR\n\n\n\n\n\n\n\n\n\nNoteWhy this context matters\n\n\n\n\n\nThe active features detected (such as SC, Rack-awareness, or XDR) fundamentally change how Aerospike handles data distribution and consistency. This report tailors its health checks based on the specific architectural flags identified during ingestion.\n\n\n\n\n\n\nStatus Overview"
+  },
+  {
+    "objectID": "status_overview.html",
+    "href": "status_overview.html",
+    "title": "Diagnostic Test: Status Overview",
+    "section": "",
+    "text": "WarningNetwork Acceleration Check\n\n\n\nSystem telemetry (sys_stats) is missing from the bundle.\n\n\n\n\n\n\n\n\nWarningSprig Limit Warning\n\n\n\nNamespace(s) loyalty (64 sprigs), sms (64 sprigs), counter (64 sprigs), urlmap (64 sprigs), dist-counter (64 sprigs) use Index-on-Flash but have low sprig counts.\n\n\n\n\n\n\n\n\nWarningConfig Symmetry\n\n\n\nDetected 10 configuration drifts across the cluster.\n\n\n\n\n\n\n\n\nWarningConfig Drift\n\n\n\nThe static aerospike.conf file was not found in the collectinfo bundle.\n\n\n\n\n\n\n\n\nWarningSecurity Connection Audit\n\n\n\nConnection Monopoly: User [countersUser] holds 87% of cluster connections (1554)."
+  },
+  {
+    "objectID": "status_overview.html#cluster-status-overview",
+    "href": "status_overview.html#cluster-status-overview",
+    "title": "Diagnostic Test: Status Overview",
+    "section": "",
+    "text": "WarningNetwork Acceleration Check\n\n\n\nSystem telemetry (sys_stats) is missing from the bundle.\n\n\n\n\n\n\n\n\nWarningSprig Limit Warning\n\n\n\nNamespace(s) loyalty (64 sprigs), sms (64 sprigs), counter (64 sprigs), urlmap (64 sprigs), dist-counter (64 sprigs) use Index-on-Flash but have low sprig counts.\n\n\n\n\n\n\n\n\nWarningConfig Symmetry\n\n\n\nDetected 10 configuration drifts across the cluster.\n\n\n\n\n\n\n\n\nWarningConfig Drift\n\n\n\nThe static aerospike.conf file was not found in the collectinfo bundle.\n\n\n\n\n\n\n\n\nWarningSecurity Connection Audit\n\n\n\nConnection Monopoly: User [countersUser] holds 87% of cluster connections (1554)."
+  },
+  {
+    "objectID": "performance_utilization.html",
+    "href": "performance_utilization.html",
+    "title": "Performance & Utilization",
+    "section": "",
+    "text": "As per Rule 2.d, disk utilization is monitored against a 60% High Water Mark (HWM) to prevent forced evictions.\n\n\n                            \n                                            \n\n\n\n\n\n\nRule 6.a monitors connection distribution. Your current audit shows one user holding a significant monopoly on these resources.\n\n\n                            \n                                            \n\n\n\n\n\n\nHigh volumes of fail_key_busy errors indicate extreme write contention on specific records, which can lead to application-level latency and timeouts.\n\n\n\n✅ No active hot key contention detected in the recent telemetry window."
+  },
+  {
+    "objectID": "performance_utilization.html#performance-utilization",
+    "href": "performance_utilization.html#performance-utilization",
+    "title": "Performance & Utilization",
+    "section": "",
+    "text": "As per Rule 2.d, disk utilization is monitored against a 60% High Water Mark (HWM) to prevent forced evictions.\n\n\n                            \n                                            \n\n\n\n\n\n\nRule 6.a monitors connection distribution. Your current audit shows one user holding a significant monopoly on these resources.\n\n\n                            \n                                            \n\n\n\n\n\n\nHigh volumes of fail_key_busy errors indicate extreme write contention on specific records, which can lead to application-level latency and timeouts.\n\n\n\n✅ No active hot key contention detected in the recent telemetry window."
+  },
+  {
+    "objectID": "observations_remediation.html",
+    "href": "observations_remediation.html",
+    "title": "Observations and Remediation",
+    "section": "",
+    "text": "The following items were identified as requiring attention to ensure optimal cluster health, performance, and predictability.\n\n\n\n\n\n\n\nWarning1.b | Network Acceleration Check (WARNING)\n\n\n\nObservation: System telemetry (sys_stats) is missing from the bundle.\nRemediation Action: Why this matters: Without system-level telemetry, we cannot verify if hardware interrupt queues or optimized network drivers (ENA) are active.\nAction Plan: 1. Re-run the collection with system metrics enabled: asadm -e \"collectinfo\". 2. Ensure the user running the command has permissions to execute ethtool, lsmod, and top. 3. If using Docker, ensure the container has visibility into the host network stack.\n\n\n\n\n\n\n\n\nWarning2.b | Sprig Limit Warning (WARNING)\n\n\n\nObservation: Namespace(s) loyalty (64 sprigs), sms (64 sprigs), counter (64 sprigs), urlmap (64 sprigs), dist-counter (64 sprigs) use Index-on-Flash but have low sprig counts.\nRemediation Action: Why this matters: Sprigs define the number of sub-trees in the primary index. For Index-on-Flash, a low sprig count causes ‘deep’ trees, requiring more disk IOPS per lookup. This can lead to high read latency and SSD saturation.\nAction Plan: 1. Increase partition-tree-sprigs in the namespace stanza (e.g., to 4096, 8192, or 16384). 2. Note: This setting requires a cold start of the Aerospike process to rebuild the index.\n\n\n\n\n\n\n\n\nWarning3.a | Config Symmetry (WARNING)\n\n\n\nObservation: Detected 10 configuration drifts across the cluster.\nRemediation Action: Why this matters: Asymmetric configurations create silent bottlenecks and unpredictable behavior.\nAction Plan: 1. Run asadm -e 'conf diff' to pinpoint the remaining differences. 2. Standardize timeouts, thread counts, and memory limits across all nodes.\n\n\n\n\n\n\n\n\nWarning3.b | Config Drift (⚠️ DATA MISSING)\n\n\n\nObservation: The static aerospike.conf file was not found in the collectinfo bundle.\nRemediation Action: Why this matters: We cannot compare live settings against your config file if the file wasn’t bundled.\nAction Plan: 1. Re-run collectinfo and explicitly point to your config file: asadm -e \"collectinfo --cf /etc/aerospike/aerospike.conf\" 2. If your config is in a custom location, update the path in the command above.\n\n\n\n\n\n\n\n\nWarning6.a | Security Connection Audit (WARNING)\n\n\n\nObservation: Connection Monopoly: User [countersUser] holds 87% of cluster connections (1554).\nRemediation Action: Assessment: A single user account monopolizing client connections can lead to ‘Service Unavailable’ errors for other applications and administrative tools (asadm/asinfo).\nAction Plan: 1. Audit the connection pooling configuration for the application using the countersUser account. 2. Ensure client SDKs are using a max connection limit that aligns with the cluster’s proto-fd-max setting. 3. Check for ‘connection leaks’ in long-running application processes."
+  },
+  {
+    "objectID": "observations_remediation.html#observations-and-remediation",
+    "href": "observations_remediation.html#observations-and-remediation",
+    "title": "Observations and Remediation",
+    "section": "",
+    "text": "The following items were identified as requiring attention to ensure optimal cluster health, performance, and predictability.\n\n\n\n\n\n\n\nWarning1.b | Network Acceleration Check (WARNING)\n\n\n\nObservation: System telemetry (sys_stats) is missing from the bundle.\nRemediation Action: Why this matters: Without system-level telemetry, we cannot verify if hardware interrupt queues or optimized network drivers (ENA) are active.\nAction Plan: 1. Re-run the collection with system metrics enabled: asadm -e \"collectinfo\". 2. Ensure the user running the command has permissions to execute ethtool, lsmod, and top. 3. If using Docker, ensure the container has visibility into the host network stack.\n\n\n\n\n\n\n\n\nWarning2.b | Sprig Limit Warning (WARNING)\n\n\n\nObservation: Namespace(s) loyalty (64 sprigs), sms (64 sprigs), counter (64 sprigs), urlmap (64 sprigs), dist-counter (64 sprigs) use Index-on-Flash but have low sprig counts.\nRemediation Action: Why this matters: Sprigs define the number of sub-trees in the primary index. For Index-on-Flash, a low sprig count causes ‘deep’ trees, requiring more disk IOPS per lookup. This can lead to high read latency and SSD saturation.\nAction Plan: 1. Increase partition-tree-sprigs in the namespace stanza (e.g., to 4096, 8192, or 16384). 2. Note: This setting requires a cold start of the Aerospike process to rebuild the index.\n\n\n\n\n\n\n\n\nWarning3.a | Config Symmetry (WARNING)\n\n\n\nObservation: Detected 10 configuration drifts across the cluster.\nRemediation Action: Why this matters: Asymmetric configurations create silent bottlenecks and unpredictable behavior.\nAction Plan: 1. Run asadm -e 'conf diff' to pinpoint the remaining differences. 2. Standardize timeouts, thread counts, and memory limits across all nodes.\n\n\n\n\n\n\n\n\nWarning3.b | Config Drift (⚠️ DATA MISSING)\n\n\n\nObservation: The static aerospike.conf file was not found in the collectinfo bundle.\nRemediation Action: Why this matters: We cannot compare live settings against your config file if the file wasn’t bundled.\nAction Plan: 1. Re-run collectinfo and explicitly point to your config file: asadm -e \"collectinfo --cf /etc/aerospike/aerospike.conf\" 2. If your config is in a custom location, update the path in the command above.\n\n\n\n\n\n\n\n\nWarning6.a | Security Connection Audit (WARNING)\n\n\n\nObservation: Connection Monopoly: User [countersUser] holds 87% of cluster connections (1554).\nRemediation Action: Assessment: A single user account monopolizing client connections can lead to ‘Service Unavailable’ errors for other applications and administrative tools (asadm/asinfo).\nAction Plan: 1. Audit the connection pooling configuration for the application using the countersUser account. 2. Ensure client SDKs are using a max connection limit that aligns with the cluster’s proto-fd-max setting. 3. Check for ‘connection leaks’ in long-running application processes."
+  },
+  {
+    "objectID": "appendix_all_tests.html",
+    "href": "appendix_all_tests.html",
+    "title": "Appendix: All Tests Performed",
+    "section": "",
+    "text": "This inventory lists every diagnostic rule executed during this assessment, providing full transparency into the health checks performed.\n\n\n\n\n\nID\nRule Name\nStatus\nSummary Finding\n\n\n\n\n1.a\nService Error Skew\n✅ PASS\nNo service errors detected across the cluster.\n\n\n1.b\nNetwork Acceleration Check\n⚠️ WARNING\nSystem telemetry (sys_stats) is missing from the bundle.\n\n\n1.c\nVersion Consistency\n✅ PASS\nAll 3 nodes are confirmed consistent on Aerospike 7.2.0.6.\n\n\n2.a\nSIndex on Flash\n✅ PASS\nSecondary indexes are correctly aligned with Primary Index storage (Flash).\n\n\n2.b\nSprig Limit Warning\n⚠️ WARNING\nNamespace(s) loyalty (64 sprigs), sms (64 sprigs), counter (64 sprigs), urlmap (64 sprigs), dist-counter (64 sprigs) use Index-on-Flash but have low sprig counts.\n\n\n2.c\nStorage Deadlock Risk\n✅ PASS\nNo disk-based namespaces detected; storage deadlock not applicable.\n\n\n2.d\nDisk HWM Check\n✅ PASS\nAll namespaces are healthy. Peak disk utilization is 33% (Threshold: 60%).\n\n\n2.e\nMemory HWM Check\n✅ PASS\nNo memory-based namespace metrics found.\n\n\n3.a\nConfig Symmetry\n⚠️ WARNING\nDetected 10 configuration drifts across the cluster.\n\n\n3.b\nConfig Drift\n⚠️ ⚠️ DATA MISSING\nThe static aerospike.conf file was not found in the collectinfo bundle.\n\n\n4.a\nHot Key Detection\n✅ PASS\nNo 'key busy' or transaction contention errors detected in this snapshot.\n\n\n4.b\nRead Not Found Rate\n✅ PASS\nNo 'Read Not Found' events detected.\n\n\n4.c\nDelete Not Found Rate\n✅ PASS\nNo unnecessary delete attempts detected.\n\n\n4.f\nSet Object Skew\n✅ PASS\nNo set-level object data found to analyze.\n\n\n5.a\nCluster Capacity Forecast\n✅ PASS\nResource utilization is healthy. Peak consumption is currently 33%.\n\n\n6.a\nSecurity Connection Audit\n⚠️ WARNING\nConnection Monopoly: User [countersUser] holds 87% of cluster connections (1554).\n\n\n\n\n\n\n\nDiagnostic Engine Version: 1.5.4\nAssessment Timestamp: 2026-02-11 21:34"
+  },
+  {
+    "objectID": "report.html#performance-and-utilization",
+    "href": "report.html#performance-and-utilization",
+    "title": "Aerospike Health and Performance Report",
+    "section": "",
+    "text": "As per Rule 2.d, disk utilization is monitored against a 60% High Water Mark (HWM) to prevent forced evictions.\n\n\n                            \n                                            \n\n\n\n\n\n\nRule 6.a monitors connection distribution. Your current audit shows one user holding a significant monopoly on these resources.\n\n\n                            \n                                            \n\n\n\n\n\n\nHigh volumes of fail_key_busy errors indicate extreme write contention on specific records, which can lead to application-level latency and timeouts.\n\n\n\n✅ No active hot key contention detected in the recent telemetry window."
+  },
+  {
+    "objectID": "report.html#performance-utilization",
+    "href": "report.html#performance-utilization",
+    "title": "Aerospike Health and Performance Report",
+    "section": "",
+    "text": "As per Rule 2.d, disk utilization is monitored against a 60% High Water Mark (HWM) to prevent forced evictions.\n\n\n                            \n                                            \n\n\n\n\n\n\nRule 6.a monitors connection distribution. Your current audit shows one user holding a significant monopoly on these resources.\n\n\n                            \n                                            \n\n\n\n\n\n\nHigh volumes of fail_key_busy errors indicate extreme write contention on specific records, which can lead to application-level latency and timeouts.\n\n\n\n✅ No active hot key contention detected in the recent telemetry window."
+  },
+  {
+    "objectID": "report.html#observations-and-remediation",
+    "href": "report.html#observations-and-remediation",
+    "title": "Aerospike Health and Performance Report",
+    "section": "",
+    "text": "The following items were identified as requiring attention to ensure optimal cluster health, performance, and predictability.\n\n\n\n\n\n\n\nWarning1.b | Network Acceleration Check (WARNING)\n\n\n\nObservation: System telemetry (sys_stats) is missing from the bundle.\nRemediation Action: Why this matters: Without system-level telemetry, we cannot verify if hardware interrupt queues or optimized network drivers (ENA) are active.\nAction Plan: 1. Re-run the collection with system metrics enabled: asadm -e \"collectinfo\". 2. Ensure the user running the command has permissions to execute ethtool, lsmod, and top. 3. If using Docker, ensure the container has visibility into the host network stack.\n\n\n\n\n\n\n\n\nWarning3.a | Config Symmetry (WARNING)\n\n\n\nObservation: Detected 9 configuration drifts across the cluster.\nRemediation Action: Why this matters: Asymmetric configurations create silent bottlenecks and unpredictable behavior.\nAction Plan: 1. Run asadm -e 'conf diff' to pinpoint the remaining differences. 2. Standardize timeouts, thread counts, and memory limits across all nodes.\n\n\n\n\n\n\n\n\nWarning3.b | Config Drift (⚠️ DATA MISSING)\n\n\n\nObservation: The static aerospike.conf file was not found in the collectinfo bundle.\nRemediation Action: Why this matters: We cannot compare live settings against your config file if the file wasn’t bundled.\nAction Plan: 1. Re-run collectinfo and explicitly point to your config file: asadm -e \"collectinfo --cf /etc/aerospike/aerospike.conf\" 2. If your config is in a custom location, update the path in the command above."
+  },
+  {
+    "objectID": "report.html#appendix-all-tests-performed",
+    "href": "report.html#appendix-all-tests-performed",
+    "title": "Aerospike Health and Performance Report",
+    "section": "",
+    "text": "This inventory lists every diagnostic rule executed during this assessment, providing full transparency into the health checks performed.\n\n\n\n\n\nID\nRule Name\nStatus\nSummary Finding\n\n\n\n\n1.a\nService Error Skew\n✅ PASS\nNo service errors detected across the cluster.\n\n\n1.b\nNetwork Acceleration Check\n⚠️ WARNING\nSystem telemetry (sys_stats) is missing from the bundle.\n\n\n1.c\nVersion Consistency\n✅ PASS\nAll 6 nodes are confirmed consistent on Aerospike 7.2.0.8.\n\n\n2.a\nSIndex on Flash\n✅ PASS\nSecondary indexes are correctly aligned with Primary Index storage (Flash).\n\n\n2.b\nSprig Limit Warning\n✅ PASS\nSprig counts are appropriately configured for Flash storage.\n\n\n2.c\nStorage Deadlock Risk\n✅ PASS\nNo disk-based namespaces detected; storage deadlock not applicable.\n\n\n2.d\nDisk HWM Check\n✅ PASS\nAll namespaces are healthy. Peak disk utilization is 0% (Threshold: 60%).\n\n\n2.e\nMemory HWM Check\n✅ PASS\nNo memory-based namespace metrics found.\n\n\n3.a\nConfig Symmetry\n⚠️ WARNING\nDetected 9 configuration drifts across the cluster.\n\n\n3.b\nConfig Drift\n⚠️ ⚠️ DATA MISSING\nThe static aerospike.conf file was not found in the collectinfo bundle.\n\n\n4.a\nHot Key Detection\n✅ PASS\nNo 'key busy' or transaction contention errors detected in this snapshot.\n\n\n4.b\nRead Not Found Rate\n✅ PASS\nNo 'Read Not Found' events detected.\n\n\n4.c\nDelete Not Found Rate\n✅ PASS\nNo unnecessary delete attempts detected.\n\n\n4.f\nSet Object Skew\n✅ PASS\nNo set-level object data found to analyze.\n\n\n5.a\nCluster Capacity Forecast\n✅ PASS\nResource utilization is healthy. Peak consumption is currently 0%.\n\n\n6.a\nSecurity Connection Audit\n✅ PASS\nConnection distribution is healthy. Top user: srvAP156348_INT (54%).\n\n\n\n\n\n\n\nAerospike Health Analyzer | Version: 1.6.1 | Generated: 2026-02-18 10:37"
+  },
+  {
+    "objectID": "report.html#status-overview",
+    "href": "report.html#status-overview",
+    "title": "Performance & Utilization",
+    "section": "",
+    "text": "title: “Diagnostic Test: Status Overview” format: html: toc: false theme: cosmo execute: echo: false —"
   }
 ]

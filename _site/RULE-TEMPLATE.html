@@ -19,41 +19,6 @@ ul.task-list li input[type="checkbox"] {
 width: 0.8em;
 margin: 0 0.8em 0.2em -1em;  vertical-align: middle;
 }
-
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-{ counter-reset: source-line 0; }
-pre.numberSource code > span
-{ position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-{ content: counter(source-line);
-position: relative; left: -1em; text-align: right; vertical-align: baseline;
-border: none; display: inline-block;
--webkit-touch-callout: none; -webkit-user-select: none;
--khtml-user-select: none; -moz-user-select: none;
--ms-user-select: none; user-select: none;
-padding: 0 4px; width: 4em;
-}
-pre.numberSource { margin-left: 3em; padding-left: 4px; }
-div.sourceCode
-{ }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -3884,12 +3849,13 @@ background: #141D73;
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#aerospike-rule-template" id="toc-aerospike-rule-template" class="nav-link active" data-scroll-target="#aerospike-rule-template">Aerospike Rule Template</a>
-  <ul class="collapse">
-  <li><a href="#rule-python-template" id="toc-rule-python-template" class="nav-link" data-scroll-target="#rule-python-template">Rule Python Template</a></li>
-  <li><a href="#contribution-guidelines" id="toc-contribution-guidelines" class="nav-link" data-scroll-target="#contribution-guidelines">Contribution Guidelines</a></li>
-  <li><a href="#status-levels" id="toc-status-levels" class="nav-link" data-scroll-target="#status-levels">Status Levels</a></li>
-  </ul></li>
+  <li><a href="#section" id="toc-section" class="nav-link active" data-scroll-target="#section">—————————————————————————–</a></li>
+  <li><a href="#version-stamp" id="toc-version-stamp" class="nav-link" data-scroll-target="#version-stamp">VERSION STAMP</a></li>
+  <li><a href="#ensures-this-rule-is-compatible-with-the-v1.4.0-markdown-reporting-engine." id="toc-ensures-this-rule-is-compatible-with-the-v1.4.0-markdown-reporting-engine." class="nav-link" data-scroll-target="#ensures-this-rule-is-compatible-with-the-v1.4.0-markdown-reporting-engine.">Ensures this rule is compatible with the v1.4.0 Markdown reporting engine.</a></li>
+  <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1">—————————————————————————–</a></li>
+  <li><a href="#metadata" id="toc-metadata" class="nav-link" data-scroll-target="#metadata">— Metadata —</a></li>
+  <li><a href="#id-x.y-e.g.-1.a---matches-the-aerospike-health-catalog" id="toc-id-x.y-e.g.-1.a---matches-the-aerospike-health-catalog" class="nav-link" data-scroll-target="#id-x.y-e.g.-1.a---matches-the-aerospike-health-catalog">ID: {X.y} (e.g., 1.a) -&gt; Matches the Aerospike Health Catalog</a></li>
+  <li><a href="#title-descriptive-name-for-the-report-table" id="toc-title-descriptive-name-for-the-report-table" class="nav-link" data-scroll-target="#title-descriptive-name-for-the-report-table">Title: Descriptive Name for the report table</a></li>
   </ul>
 </nav>
     </div>
@@ -3899,107 +3865,107 @@ background: #141D73;
 
 
 
-<section id="aerospike-rule-template" class="level1">
-<h1>Aerospike Rule Template</h1>
-<p>This document provides the standardized template and guidelines for contributing new health check rules to the Aerospike Health and Performance Report. Following this template ensures that your rule integrates seamlessly with the automated reporting engine.</p>
-<section id="rule-python-template" class="level2">
-<h2 class="anchored" data-anchor-id="rule-python-template">Rule Python Template</h2>
-<p>Use the following structure for your rule file (e.g., <code>rules/your_check_name.py</code>).</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sqlite3</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Metadata ---</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ID: {X.y} (e.g., 5.a)</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Title: Descriptive Name</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_check(db_path<span class="op">=</span><span class="st">&quot;aerospike_health.db&quot;</span>):</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">    Executes the health check against the local SQLite database.</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">        dict: {</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co">            &quot;id&quot;: str,          # The unique identifier (e.g., &quot;5.a&quot;)</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">            &quot;name&quot;: str,        # The display name of the rule</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co">            &quot;status&quot;: str,      # PASS, </span><span class="al">WARNING</span><span class="co">, CRITICAL, or ⚠️ DATA MISSING</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co">            &quot;message&quot;: str,     # Human-readable findings</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co">            &quot;remediation&quot;: str  # Specific steps to resolve the issue</span></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co">        }</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    conn <span class="op">=</span> sqlite3.<span class="ex">connect</span>(db_path)</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 1. Query Logic</span></span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        <span class="co"># df = pd.read_sql_query(&quot;SELECT ...&quot;, conn)</span></span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 2. Handle Missing Data</span></span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        <span class="co"># if df.empty:</span></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        <span class="co">#     return {</span></span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        <span class="co">#         &quot;id&quot;: &quot;X.y&quot;,</span></span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        <span class="co">#         &quot;name&quot;: &quot;Rule Name&quot;,</span></span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>        <span class="co">#         &quot;status&quot;: &quot;⚠️ DATA MISSING&quot;,</span></span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>        <span class="co">#         &quot;message&quot;: &quot;Telemetry not found.&quot;,</span></span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>        <span class="co">#         &quot;remediation&quot;: &quot;Run &#39;asadm -e info&#39; to collect missing metrics.&quot;</span></span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        <span class="co">#     }</span></span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 3. Success Case</span></span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> {</span>
-<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;id&quot;</span>: <span class="st">&quot;X.y&quot;</span>,</span>
-<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;name&quot;</span>: <span class="st">&quot;Your Rule Name&quot;</span>,</span>
-<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;status&quot;</span>: <span class="st">&quot;PASS&quot;</span>,</span>
-<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;message&quot;</span>: <span class="st">&quot;Check completed successfully.&quot;</span>,</span>
-<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;remediation&quot;</span>: <span class="st">&quot;None required.&quot;</span></span>
-<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
-<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> {</span>
-<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;id&quot;</span>: <span class="st">&quot;X.y&quot;</span>,</span>
-<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;name&quot;</span>: <span class="st">&quot;Your Rule Name&quot;</span>,</span>
-<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;status&quot;</span>: <span class="st">&quot;CRITICAL&quot;</span>,</span>
-<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;message&quot;</span>: <span class="ss">f&quot;An error occurred: </span><span class="sc">{</span><span class="bu">str</span>(e)<span class="sc">}</span><span class="ss">&quot;</span>,</span>
-<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;remediation&quot;</span>: <span class="st">&quot;Review logs and database schema.&quot;</span></span>
-<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">finally</span>:</span>
-<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>        conn.close()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>import sqlite3 import pandas as pd</p>
+<section id="section" class="level1">
+<h1>—————————————————————————–</h1>
 </section>
-<section id="contribution-guidelines" class="level2">
-<h2 class="anchored" data-anchor-id="contribution-guidelines">Contribution Guidelines</h2>
-<ol type="1">
-<li><strong>Return Schema</strong>: Every rule must return a dictionary with keys: <code>id</code>, <code>name</code>, <code>status</code>, <code>message</code>, and <code>remediation</code>.</li>
-<li><strong>Error Handling</strong>: Use <code>try...except...finally</code> to ensure the reporting engine continues running even if a specific rule fails.</li>
-<li><strong>Read-Only</strong>: Rules should only read from the database.</li>
-</ol>
+<section id="version-stamp" class="level1">
+<h1>VERSION STAMP</h1>
 </section>
-<section id="status-levels" class="level2">
-<h2 class="anchored" data-anchor-id="status-levels">Status Levels</h2>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th style="text-align: left;">Status</th>
-<th style="text-align: left;">Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;"><strong>PASS</strong></td>
-<td style="text-align: left;">Healthy thresholds.</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><strong>WARNING</strong></td>
-<td style="text-align: left;">Threshold exceeded, but operational.</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><strong>CRITICAL</strong></td>
-<td style="text-align: left;">Risk of data loss or instability.</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><strong>⚠️ DATA MISSING</strong></td>
-<td style="text-align: left;">Telemetry lacks required metrics.</td>
-</tr>
-</tbody>
-</table>
+<section id="ensures-this-rule-is-compatible-with-the-v1.4.0-markdown-reporting-engine." class="level1">
+<h1>Ensures this rule is compatible with the v1.4.0 Markdown reporting engine.</h1>
+</section>
+<section id="section-1" class="level1">
+<h1>—————————————————————————–</h1>
+<p><strong>version</strong> = “1.4.0”</p>
+</section>
+<section id="metadata" class="level1">
+<h1>— Metadata —</h1>
+</section>
+<section id="id-x.y-e.g.-1.a---matches-the-aerospike-health-catalog" class="level1">
+<h1>ID: {X.y} (e.g., 1.a) -&gt; Matches the Aerospike Health Catalog</h1>
+</section>
+<section id="title-descriptive-name-for-the-report-table" class="level1">
+<h1>Title: Descriptive Name for the report table</h1>
+<p>def run_check(db_path=“aerospike_health.db”): conn = sqlite3.connect(db_path)</p>
+<pre><code># -------------------------------------------------------------------------
+# CONFIGURATION
+# Set your Rule ID and Name here. These appear in the final report.
+# -------------------------------------------------------------------------
+check_id = &quot;X.y&quot;
+check_name = &quot;Descriptive Rule Name&quot;
+
+try:
+    # ---------------------------------------------------------------------
+    # 1. SCHEMA SAFETY CHECK
+    # Before querying, we verify the table exists to prevent a crash if 
+    # the ingestor failed or the bundle was incomplete.
+    # ---------------------------------------------------------------------
+    cursor = conn.cursor()
+    target_table = &quot;node_stats&quot; # Replace with your required table
+    cursor.execute(f&quot;SELECT name FROM sqlite_master WHERE type=&#39;table&#39; AND name=&#39;{target_table}&#39;&quot;)
+    
+    if not cursor.fetchone():
+        return {
+            &quot;id&quot;: check_id, &quot;name&quot;: check_name, &quot;status&quot;: &quot;⚠️ DATA MISSING&quot;,
+            &quot;message&quot;: f&quot;Table &#39;{target_table}&#39; not found in database.&quot;,
+            &quot;remediation&quot;: &quot;Verify that the correct Ingestor is enabled in ingest/__init__.py.&quot;
+        }
+
+    # ---------------------------------------------------------------------
+    # 2. QUERY LOGIC
+    # Use standard SQL. Aim for specific columns rather than SELECT *
+    # to keep the dataframe lightweight.
+    # ---------------------------------------------------------------------
+    query = f&quot;SELECT node_id, metric, value FROM {target_table} WHERE metric = &#39;example_metric&#39;&quot;
+    df = pd.read_sql_query(query, conn)
+    
+    # ---------------------------------------------------------------------
+    # 3. ANALYSIS &amp; RESULTS
+    # Standard PASS/WARNING/CRITICAL logic.
+    # ---------------------------------------------------------------------
+    if df.empty:
+        return {
+            &quot;id&quot;: check_id, &quot;name&quot;: check_name, &quot;status&quot;: &quot;PASS&quot;,
+            &quot;message&quot;: &quot;Healthy state description: e.g., No error skew detected.&quot;,
+            &quot;remediation&quot;: &quot;None&quot;
+        }
+    
+    # Example threshold check (Adjust as needed)
+    threshold = 100
+    findings = df[df[&#39;value&#39;] &gt; threshold]
+
+    if not findings.empty:
+        return {
+            &quot;id&quot;: check_id,
+            &quot;name&quot;: check_name,
+            &quot;status&quot;: &quot;WARNING&quot;, # Or &quot;CRITICAL&quot;
+            &quot;message&quot;: f&quot;Detected {len(findings)} nodes exceeding threshold {threshold}.&quot;,
+            &quot;remediation&quot;: (
+                &quot;**Why this matters:** [Explain the technical impact].\n\n&quot;
+                &quot;**Action Plan:**\n&quot;
+                &quot;1. Step-by-step resolution using `asadm`.\n&quot;
+                &quot;2. Configuration changes required.&quot;
+            )
+        }
+
+    # Final default fallback
+    return {
+        &quot;id&quot;: check_id, &quot;name&quot;: check_name, &quot;status&quot;: &quot;PASS&quot;,
+        &quot;message&quot;: &quot;All metrics within normal bounds.&quot;, &quot;remediation&quot;: &quot;None&quot;
+    }
+    
+except Exception as e:
+    # Graceful failure: prevents one bad rule from breaking the whole report
+    return {
+        &quot;id&quot;: check_id, &quot;name&quot;: check_name, &quot;status&quot;: &quot;CRITICAL&quot;,
+        &quot;message&quot;: f&quot;Execution Error: {str(e)}&quot;,
+        &quot;remediation&quot;: &quot;Review the database schema and rule query logic.&quot;
+    }
+finally:
+    conn.close()</code></pre>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->

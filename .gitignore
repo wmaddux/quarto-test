@@ -24,3 +24,8 @@ bundles/
 
 /.quarto/
 **/*.quarto_ipynb
+
+# Artifacts & Output
+_site/
+.quarto/
+report.quarto_ipynb

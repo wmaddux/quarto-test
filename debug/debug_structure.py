@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import tarfile, json, gzip, zipfile, io, sys, os
-__version__ = "1.4.0"
+__version__ = "1.6.1"
 
 def profile_telemetry(path):
     if not os.path.exists(path):
