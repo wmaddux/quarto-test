@@ -29,3 +29,5 @@ bundles/
 _site/
 .quarto/
 report.quarto_ipynb
+
+debug/
