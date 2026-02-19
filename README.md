@@ -1,20 +1,20 @@
-# Aerospike Health Analyzer (v1.6.1)
+# Aerospike Health Analyzer (v2.0)
 
 A universal diagnostic framework for Aerospike clusters, providing native support for **6.x, 7.x, and 8.x** Enterprise editions. It ingests `collectinfo` telemetry into a relational SQLite database, executes a version-aware rule engine, and generates modular Quarto HTML reports.
 
 ---
 
-## 🏗 Architecture & Design
+## Architecture & Design
 
 The tool operates as a decoupled data pipeline:
 
-1.  **Ingestion Layer (`ingest/`)**: Orchestrates schema creation and JSON traversal, flattening hierarchical telemetry into relational tables.
-2.  **Logic Layer (`rules/`)**: Independent Python modules that perform version-aware anomaly detection using schema discovery.
-3.  **Presentation Layer (`report_components/`)**: A modular Quarto-based UI that adapts visualizations based on available data.
+1. **Ingestion Layer (`ingest/`)**: The DB is created from the canonical schema (`schema/baseline.sql`) at ingest init; ingestors only insert. They flatten hierarchical telemetry into relational tables and normalize version-specific metrics (e.g. 6.x/7.x namespace stats) for rules and the report.
+2. **Logic Layer (`rules/`)**: Independent Python modules that perform version-aware anomaly detection against the fixed schema.
+3. **Presentation Layer (`report_components/`)**: A modular Quarto-based UI that adapts visualizations based on available data.
 
 ---
 
-## ⚙️ Prerequisites & Installation
+## Prerequisites & Installation
 
 ### Local Environment Requirements
 * **Python 3.10 - 3.13**: The core engine utilizes modern Python features and type hinting.
@@ -22,59 +22,69 @@ The tool operates as a decoupled data pipeline:
 * **Aerospike Admin (asadm)**: Necessary for collecting the telemetry bundles (`.tgz`) from target clusters.
 
 ### Setup
+From the project root, create and populate a virtual environment (recommended):
+
 ```bash
-git clone [https://github.com/aerospike/health-analyzer.git](https://github.com/aerospike/health-analyzer.git)
-cd health-analyzer
+git clone <your-repo-url>
+cd <project-directory>
 
-# Initialize Virtual Environment
-python3 -m venv .venv
+# Create venv and install dependencies (pandas, plotly, jupyter, pyyaml)
+./setup_venv.sh
+
+# Activate the venv before running any commands below
 source .venv/bin/activate
-
-# Install Dependencies
-pip install pandas plotly sqlite3
 ```
+
+Dependencies include **pandas**, **plotly**, **jupyter**, and **pyyaml** (required for `quarto render report.qmd`). SQLite is provided by the Python standard library.
 
 ---
 
-## 📂 Directory Structure
+## Directory Structure
 
 ```text
-health-analyzer/
+<project>/
+├── MANIFEST.md           # Project scope, requirements, backlog
 ├── run_ingest.py         # Ingestion entry point
-├── check_integrity.py    # Rule/Schema validator
-├── commit_baseline.py    # Git automation script
-├── set_version.py        # Global version synchronizer
-├── report.qmd            # Master Quarto template
-├── _setup.qmd            # Data loading & rule execution
-├── ingest/               # Telemetry parsers
+├── ingest_manager.py     # Applies schema/baseline.sql, runs ingestors per node
+├── check_integrity.py    # Validates DB schema against schema/baseline.sql, then runs rules
+├── setup_venv.sh         # Venv creation and dependency install
+├── schema/               # Canonical SQLite DDL
+│   └── baseline.sql
+├── docs/                 # Schema and version-path documentation
+│   ├── schema.md
+│   ├── telemetry-version-path-matrix.md
+│   └── samples/
+├── ingest/               # Telemetry parsers (one table per module)
 ├── rules/                # Diagnostic logic library
-├── report_components/    # Modular UI partials
-└── bundles/              # Source .tgz collectinfo files
+├── report_components/   # Modular UI partials
+├── ingest_samples/       # Optional: sample collectinfo bundles (6.x, 7.x, 8.x)
+├── inspect_collectinfo_bundles.py  # Optional: inspect bundle structure
+├── report.qmd
+├── _setup.qmd
+├── commit_baseline.py
+└── set_version.py
 ```
 
 ---
 
-## 🛠 Usage
+## Usage
+
+Activate the venv first (`source .venv/bin/activate`), then:
 
 ### 1. Ingest Telemetry
-Ingests an Aerospike `collectinfo` bundle. The analyzer automatically detects the version and cloud platform.
+Ingests an Aerospike `collectinfo` bundle. The DB is recreated from `schema/baseline.sql` on each run; the previous database is replaced automatically.
 
 ```bash
-# Clean previous database to prevent schema pollution
-rm -f aerospike_health.db
-
-# Ingest new bundle
-python3 run_ingest.py bundles/your_bundle.tgz
+python3 run_ingest.py path/to/your_bundle.tgz
+# Example with sample bundles:
+# python3 run_ingest.py ingest_samples/collect_info_v7x/adobe-azure-els.collect_info_20260120_225608.tgz
 ```
 
 ### 2. Verify and Render
-Always run the integrity check before rendering to ensure your local environment and ruleset are aligned with the ingested data.
+Run the integrity check before rendering. It validates that the live DB schema matches `schema/baseline.sql`, then runs all rules.
 
 ```bash
-# Verify rules
 python3 check_integrity.py
-
-# Generate HTML report
 quarto render report.qmd
 ```
 
@@ -82,13 +92,20 @@ quarto render report.qmd
 Use the internal tools to keep versioning and Git history synchronized.
 
 ```bash
-# Sync version strings globally (rules, ingestors, docs)
 python3 set_version.py
-
-# Execute atomic Git commit and tagging
 python3 commit_baseline.py
 ```
 
 ---
 
-**Version:** 1.6.1 | **Target Support:** Aerospike 6.x, 7.x, 8.x Enterprise | **Maintainer:** TAM Team
+## Documentation
+
+* **[MANIFEST.md](MANIFEST.md)** — Project scope, requirements (fixed schema, aerospike.conf in bundle, ingest tagging), and backlog.
+* **[docs/schema.md](docs/schema.md)** — SQLite table and column reference.
+* **[docs/telemetry-version-path-matrix.md](docs/telemetry-version-path-matrix.md)** — Collectinfo JSON path → table mapping for 6.x, 7.x, and 8.x.
+
+A future release will require **aerospike.conf** to be present in the collectinfo bundle; ingestion will fail if it is missing.
+
+---
+
+**Version:** 2.0 | **Target Support:** Aerospike 6.x, 7.x, 8.x Enterprise | **Maintainer:** TAM Team
