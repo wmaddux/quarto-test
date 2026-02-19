@@ -12,21 +12,9 @@ class SetStatsIngestor:
     """
     def run_ingest(self, node_id, node_data, conn, run_id):
         cursor = conn.cursor()
+        # Table created from schema/baseline.sql at ingest init.
 
-        # 1. Ensure Table Exists (Matches existing vertical schema)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS set_stats (
-                node_id TEXT, 
-                ns TEXT, 
-                set_name TEXT, 
-                key TEXT, 
-                value TEXT, 
-                run_id TEXT,
-                PRIMARY KEY (node_id, ns, set_name, key, run_id)
-            )
-        """)
-
-        # 2. Navigate hierarchy: as_stat -> statistics -> set
+        # Navigate hierarchy: as_stat -> statistics -> set
         set_data = node_data.get("as_stat", {}).get("statistics", {}).get("set", {})
         
         # 3. Extract and Persist using the Vertical (Key/Value) pattern

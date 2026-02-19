@@ -114,9 +114,8 @@ class FeaturesIngestor(BaseIngestor):
                stat_gt(ns_svc_stats, ['index_flash_used_bytes', 'index_flash_alloc_bytes']):
                 active.add("Index-on-flash")
 
-        # --- Database Insertion ---
+        # --- Database Insertion --- (table created from schema/baseline.sql at ingest init)
         cursor = conn.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS active_features (run_id TEXT, node_id TEXT, feature TEXT)")
         for feature in active:
             cursor.execute("INSERT INTO active_features VALUES (?, ?, ?)", (run_id, node_id, feature))
         

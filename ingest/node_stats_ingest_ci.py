@@ -29,21 +29,8 @@ class NodeStatsIngestor:
         return dict(items)
 
     def run_ingest(self, node_id, data, conn, run_id):
-        # -------------------------------------------------------------------------
-        # TABLE INITIALIZATION
-        # -------------------------------------------------------------------------
         cursor = conn.cursor()
-        
-        # Ensure the table can store both Numbers and Strings
-        cursor.execute(f"""
-            CREATE TABLE IF NOT EXISTS {self.table_name} (
-                run_id TEXT,
-                node_id TEXT,
-                metric TEXT,
-                value TEXT
-            )
-        """)
-
+        # Table created from schema/baseline.sql at ingest init; ingestors only INSERT.
         # -------------------------------------------------------------------------
         # DATA PROCESSING
         # -------------------------------------------------------------------------

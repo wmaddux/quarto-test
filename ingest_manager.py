@@ -37,14 +37,22 @@ def find_telemetry_member(tar):
     # Heuristic: The telemetry file is the largest JSON file
     return max(candidates, key=lambda m: m.size)
 
+def _apply_baseline_schema(conn):
+    """Create all tables from the canonical schema. Call once at DB init."""
+    baseline_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "schema", "baseline.sql")
+    if not os.path.exists(baseline_path):
+        raise FileNotFoundError(f"Schema baseline not found: {baseline_path}")
+    with open(baseline_path, "r") as f:
+        conn.executescript(f.read())
+
 def process_collectinfo(input_path, db_path="aerospike_health.db"):
     if os.path.exists(db_path):
         os.remove(db_path)
     
     conn = sqlite3.connect(db_path)
+    _apply_baseline_schema(conn)
     cursor = conn.cursor()
-    cursor.execute("CREATE TABLE IF NOT EXISTS cluster_metadata (key TEXT PRIMARY KEY, value TEXT)")
-    
+
     # Generate a run_id based on current wall clock
     run_id = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     

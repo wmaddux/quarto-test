@@ -1,0 +1,12 @@
+{
+  "_comment": "Minimal structure from 8.x bundle inspection. Replace with anonymized snippet from ingest_samples/collect_info_v8x/ if desired.",
+  "as_stat": {
+    "statistics": { "namespace": {}, "service": {} },
+    "config": {},
+    "meta_data": {},
+    "acl": { "users": {} },
+    "histogram": {},
+    "latency": {}
+  },
+  "sys_stat": {}
+}

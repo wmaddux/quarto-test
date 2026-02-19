@@ -1,0 +1,114 @@
+[
+  {
+    "label": "6.x",
+    "path": "/Users/wmaddux/dev/cursor/quarto-test/ingest_samples/collect_info_v6x/yahoo-collect_info_20251001_122057.tgz",
+    "aerospike_conf_present": true,
+    "aerospike_conf_paths": [
+      "tmp/collect_info_20251001_122057/20251001_122057_aerospike.conf"
+    ],
+    "telemetry_member": "tmp/collect_info_20251001_122057/20251001_122057_ascinfo.json.zip",
+    "data_top_level": [
+      "2025-10-01 12:20:57 UTC"
+    ],
+    "node_id": "10.87.4.232:3000",
+    "node_top_level": [
+      "as_stat",
+      "sys_stat"
+    ],
+    "paths": {
+      "as_stat": "present",
+      "sys_stat": "present",
+      "as_stat.statistics": "present",
+      "as_stat.config": "present",
+      "as_stat.meta_data": "present",
+      "as_stat.acl": "present",
+      "as_stat.namespaces": "ABSENT",
+      "as_stat.statistics.namespace": "present",
+      "as_stat.statistics.set": "ABSENT",
+      "as_stat.statistics.service": "present",
+      "as_stat.acl.users": "present"
+    },
+    "as_stat_keys": [
+      "statistics",
+      "config",
+      "meta_data",
+      "histogram",
+      "latency",
+      "acl"
+    ]
+  },
+  {
+    "label": "7.x",
+    "path": "/Users/wmaddux/dev/cursor/quarto-test/ingest_samples/collect_info_v7x/adobe-azure-els.collect_info_20260120_225608.tgz",
+    "aerospike_conf_present": false,
+    "aerospike_conf_paths": [],
+    "telemetry_member": "tmp/collect_info_20260120_225608/20260120_225608_ascinfo.json.zip",
+    "data_top_level": [
+      "2026-01-20 22:56:08 UTC"
+    ],
+    "node_id": "10.181.0.29:3000",
+    "node_top_level": [
+      "as_stat",
+      "sys_stat"
+    ],
+    "paths": {
+      "as_stat": "present",
+      "sys_stat": "present",
+      "as_stat.statistics": "present",
+      "as_stat.config": "present",
+      "as_stat.meta_data": "present",
+      "as_stat.acl": "present",
+      "as_stat.namespaces": "ABSENT",
+      "as_stat.statistics.namespace": "present",
+      "as_stat.statistics.set": "ABSENT",
+      "as_stat.statistics.service": "present",
+      "as_stat.acl.users": "present"
+    },
+    "as_stat_keys": [
+      "statistics",
+      "config",
+      "meta_data",
+      "histogram",
+      "latency",
+      "acl"
+    ]
+  },
+  {
+    "label": "8.x",
+    "path": "/Users/wmaddux/dev/cursor/quarto-test/ingest_samples/collect_info_v8x/swarit_collect_info_20260108_065237.tgz",
+    "aerospike_conf_present": true,
+    "aerospike_conf_paths": [
+      "tmp/collect_info_20260108_065237/20260108_065237_aerospike.conf"
+    ],
+    "telemetry_member": "tmp/collect_info_20260108_065237/20260108_065237_ascinfo.json.zip",
+    "data_top_level": [
+      "2026-01-08 06:52:37 UTC"
+    ],
+    "node_id": "10.32.16.193:3000",
+    "node_top_level": [
+      "as_stat",
+      "sys_stat"
+    ],
+    "paths": {
+      "as_stat": "present",
+      "sys_stat": "present",
+      "as_stat.statistics": "present",
+      "as_stat.config": "present",
+      "as_stat.meta_data": "present",
+      "as_stat.acl": "present",
+      "as_stat.namespaces": "ABSENT",
+      "as_stat.statistics.namespace": "present",
+      "as_stat.statistics.set": "ABSENT",
+      "as_stat.statistics.service": "present",
+      "as_stat.acl.users": "present"
+    },
+    "as_stat_keys": [
+      "statistics",
+      "config",
+      "meta_data",
+      "histogram",
+      "latency",
+      "acl"
+    ]
+  }
+]

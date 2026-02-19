@@ -13,15 +13,7 @@ class SystemInfoIngestor(BaseIngestor):
             return
 
         cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS system_info (
-                run_id TEXT, 
-                node_id TEXT, 
-                metric TEXT, 
-                value TEXT
-            )
-        """)
-
+        # Table created from schema/baseline.sql at ingest init.
         for metric, value in sys_info.items():
             # System info is often strings (e.g., "instance-type": "m5.large")
             cursor.execute(

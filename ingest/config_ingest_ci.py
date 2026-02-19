@@ -20,17 +20,7 @@ class ConfigIngestor(BaseIngestor):
         config_data = as_stat.get('config', as_stat)
         
         cursor = conn.cursor()
-        
-        # The 'source' column is required by rules like config_drift_check.py
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS node_configs (
-                run_id TEXT, 
-                node_id TEXT, 
-                config_name TEXT, 
-                value TEXT, 
-                source TEXT
-            )
-        """)
+        # Table created from schema/baseline.sql at ingest init.
 
         def flatten_configs(data, prefix=""):
             """

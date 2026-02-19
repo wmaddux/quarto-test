@@ -8,11 +8,65 @@ import importlib
 # -----------------------------------------------------------------------------
 __version__ = "1.6.1"
 
+def _get_schema_from_db(conn):
+    """Return dict: table_name -> list of (column_name, type)."""
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+    tables = [row[0] for row in cursor.fetchall()]
+    out = {}
+    for t in tables:
+        cursor.execute(f"PRAGMA table_info({t})")
+        out[t] = [(row[1], row[2]) for row in cursor.fetchall()]
+    return out
+
+def _validate_schema_against_baseline(db_path):
+    """Ensure live DB schema matches schema/baseline.sql. Return (True, None) or (False, error_msg)."""
+    baseline_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "schema", "baseline.sql")
+    if not os.path.exists(baseline_path):
+        return False, f"Schema baseline not found: {baseline_path}"
+    with open(baseline_path, "r") as f:
+        baseline_sql = f.read()
+    # Build expected schema by running baseline on an in-memory DB
+    mem = sqlite3.connect(":memory:")
+    try:
+        mem.executescript(baseline_sql)
+        expected = _get_schema_from_db(mem)
+    finally:
+        mem.close()
+    # Get actual schema from live DB
+    if not os.path.exists(db_path):
+        return False, f"{db_path} not found. Run ingestion first."
+    conn = sqlite3.connect(db_path)
+    try:
+        actual = _get_schema_from_db(conn)
+    finally:
+        conn.close()
+    # Compare
+    if set(expected.keys()) != set(actual.keys()):
+        missing = set(expected.keys()) - set(actual.keys())
+        extra = set(actual.keys()) - set(expected.keys())
+        msg = []
+        if missing:
+            msg.append(f"missing tables: {sorted(missing)}")
+        if extra:
+            msg.append(f"extra tables: {sorted(extra)}")
+        return False, "Schema mismatch: " + "; ".join(msg)
+    for table in expected:
+        if expected[table] != actual[table]:
+            return False, f"Schema mismatch in table '{table}': expected columns {expected[table]}, got {actual[table]}"
+    return True, None
+
 def verify():
     db_path = "aerospike_health.db"
     if not os.path.exists(db_path):
         print(f"❌ FAILED: {db_path} not found. Run ingestion first.")
         return False
+
+    ok, err = _validate_schema_against_baseline(db_path)
+    if not ok:
+        print(f"❌ FAILED: {err}")
+        return False
+    print("✅ Schema matches schema/baseline.sql")
 
     # Define the ruleset to check
     try:

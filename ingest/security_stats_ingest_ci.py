@@ -12,19 +12,9 @@ class SecurityStatsIngestor:
     """
     def run_ingest(self, node_id, node_data, conn, run_id):
         cursor = conn.cursor()
+        # Table created from schema/baseline.sql at ingest init.
 
-        # 1. Ensure Table Exists
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS security_stats (
-                node_id TEXT, 
-                user TEXT, 
-                connections INTEGER, 
-                run_id TEXT,
-                PRIMARY KEY (node_id, user, run_id)
-            )
-        """)
-
-        # 2. Extract Data (Navigate the 7.x JSON path: as_stat -> acl -> users)
+        # Extract Data (Navigate the 7.x JSON path: as_stat -> acl -> users)
         acl_data = node_data.get("as_stat", {}).get("acl", {})
         users = acl_data.get("users", {})
         
