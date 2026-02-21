@@ -2,12 +2,12 @@ import subprocess
 import os
 
 # =============================================================================
-# CONFIGURATION - Set for v1.6.1 Patch Release
+# CONFIGURATION - Set for v2.0.1 Patch Release
 # =============================================================================
-NEW_VERSION  = "1.6.1"
+NEW_VERSION  = "2.0.1"
 TAG_SUFFIX   = "stable"
 REMOTE_PUSH  = "origin"
-BRANCH_NAME  = "main"
+BRANCH_NAME  = "2.0"
 # =============================================================================
 
 def run_cmd(cmd):
@@ -24,8 +24,9 @@ def commit_pipeline():
 
     # --- 1. Phase 1: Core Engine & Ingestors ---
     print("\n📦 Phase 1: Locking Core Engine...")
-    run_cmd(["git", "add", "run_ingest.py", "ingest_manager.py", "set_version.py"])
-    run_cmd(["git", "add", "ingest/"])
+    run_cmd(["git", "add", "run_ingest.py", "ingest_manager.py", "set_version.py", "inspect_collectinfo_bundles.py"])
+    run_cmd(["git", "add", "ingest/", "schema/"])
+    run_cmd(["git", "add", "docs/", "tests/"])
     run_cmd(["git", "commit", "-m", f"BASE: Core Engine & Ingestors (v{NEW_VERSION})"])
 
     # --- 2. Phase 2: Logic & Ruleset ---

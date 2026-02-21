@@ -1,6 +1,6 @@
 # Health Maturity Report — Project Manifest
 
-**Current baseline:** 2.0 (branch) | **Focus:** Data ingestion quality, schema standardization, and requirements alignment.
+**Current baseline:** 2.0 (branch) | **Release:** 2.0.1 | **Focus:** Data ingestion quality, schema standardization, and requirements alignment.
 
 ---
 
@@ -42,7 +42,9 @@
 | set_stats_ingest_ci.py | set_stats |
 | security_stats_ingest_ci.py | security_stats |
 
-**Planned:** log_ingestor.py (aerospike.log), config_ingestor from file (aerospike.conf).
+**Static config:** When the collectinfo bundle includes **aerospike.conf**, `ingest_manager.py` locates it in the tarball, parses it, and inserts into **static_configs** (see [schema/baseline.sql](schema/baseline.sql), [docs/schema.md](docs/schema.md)). The Config Drift rule (3.b) compares `node_configs` (live) to `static_configs` (file). If the file is missing from the bundle, the rule reports DATA MISSING.
+
+**Planned:** log_ingestor.py (aerospike.log).
 
 ### Rules (rules/)
 

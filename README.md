@@ -1,4 +1,4 @@
-# Aerospike Health Analyzer (v2.0)
+# Aerospike Health Analyzer (v2.0.1)
 
 A universal diagnostic framework for Aerospike clusters, providing native support for **6.x, 7.x, and 8.x** Enterprise editions. It ingests `collectinfo` telemetry into a relational SQLite database, executes a version-aware rule engine, and generates modular Quarto HTML reports.
 
@@ -11,6 +11,29 @@ The tool operates as a decoupled data pipeline:
 1. **Ingestion Layer (`ingest/`)**: The DB is created from the canonical schema (`schema/baseline.sql`) at ingest init; ingestors only insert. They flatten hierarchical telemetry into relational tables and normalize version-specific metrics (e.g. 6.x/7.x namespace stats) for rules and the report.
 2. **Logic Layer (`rules/`)**: Independent Python modules that perform version-aware anomaly detection against the fixed schema.
 3. **Presentation Layer (`report_components/`)**: A modular Quarto-based UI that adapts visualizations based on available data.
+
+```mermaid
+flowchart LR
+  subgraph ingest [Ingest]
+    run_ingest[run_ingest.py]
+    DB[(aerospike_health.db)]
+  end
+  subgraph validate [Validate]
+    check_integrity[check_integrity.py]
+    baseline[schema/baseline.sql]
+    rules[rules/]
+  end
+  subgraph report [Report]
+    setup[_setup.qmd]
+    quarto[Quarto render]
+  end
+  run_ingest --> DB
+  DB --> check_integrity
+  baseline --> check_integrity
+  rules --> check_integrity
+  DB --> setup
+  setup --> quarto
+```
 
 ---
 
@@ -53,7 +76,11 @@ Dependencies include **pandas**, **plotly**, **jupyter**, and **pyyaml** (requir
 ├── docs/                 # Schema and version-path documentation
 │   ├── schema.md
 │   ├── telemetry-version-path-matrix.md
+│   ├── testing.md       # E2E and rules report
+│   ├── report-issues.md # Report clarity/accuracy backlog
 │   └── samples/
+├── tests/                # E2E wrapper
+│   └── run_e2e.py       # Ingest + integrity in one command
 ├── ingest/               # Telemetry parsers (one table per module)
 ├── rules/                # Diagnostic logic library
 ├── report_components/   # Modular UI partials
@@ -88,6 +115,8 @@ python3 check_integrity.py
 quarto render report.qmd
 ```
 
+**Fast e2e loop (ingest + integrity, no report):** Run `python3 tests/run_e2e.py <bundle.tgz>` to ingest and validate in one step. Optional: set `AEROSPIKE_E2E_BUNDLE` to a fixture path and run `python3 tests/run_e2e.py`. See [docs/testing.md](docs/testing.md).
+
 ### 3. Maintain the Baseline
 Use the internal tools to keep versioning and Git history synchronized.
 
@@ -104,8 +133,8 @@ python3 commit_baseline.py
 * **[docs/schema.md](docs/schema.md)** — SQLite table and column reference.
 * **[docs/telemetry-version-path-matrix.md](docs/telemetry-version-path-matrix.md)** — Collectinfo JSON path → table mapping for 6.x, 7.x, and 8.x.
 
-A future release will require **aerospike.conf** to be present in the collectinfo bundle; ingestion will fail if it is missing.
+When the collectinfo bundle includes **aerospike.conf**, it is parsed and ingested into the `static_configs` table for the Config Drift rule (see [docs/schema.md](docs/schema.md)#static_configs). If the file is missing, that rule reports DATA MISSING.
 
 ---
 
-**Version:** 2.0 | **Target Support:** Aerospike 6.x, 7.x, 8.x Enterprise | **Maintainer:** TAM Team
+**Version:** 2.0.1 | **Target Support:** Aerospike 6.x, 7.x, 8.x Enterprise | **Maintainer:** TAM Team

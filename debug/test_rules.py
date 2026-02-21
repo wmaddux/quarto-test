@@ -1,4 +1,4 @@
-__version__ = "1.6.1"
+__version__ = "2.0.1"
 #!/usr/bin/env python3
 from rules.network_acceleration_check import run_check as ena_check
 from rules.version_consistency_check import run_check as version_check

@@ -3,9 +3,9 @@ import re
 from datetime import datetime
 
 # =============================================================================
-# CONFIGURATION - Global Version for v1.6.1 (Modular Patch)
+# CONFIGURATION - Global Version for v2.0.1
 # =============================================================================
-NEW_VERSION = "1.6.1"
+NEW_VERSION = "2.0.1"
 DATE_STR    = datetime.now().strftime("%Y-%m-%d")
 
 # This script will scan these file types across the entire project
@@ -16,14 +16,12 @@ DOC_FILES = ["CATALOG.md", "README.md"]
 
 def update_file_content(content):
     """Updates version strings for both Python logic and Quarto setups."""
-    # Matches: __version__ = "1.6.1"
+    # Matches: __version__ = "2.0.1"
     if "__version__" in content:
-        content = re.sub(r'__version__\s*=\s*["\'].*?["\']', f'__version__ = "1.6.1"', content)
-    
-    # Matches: PROJECT_VERSION = "1.6.1" (used in _setup.qmd)
+        content = re.sub(r'__version__\s*=\s*["\'].*?["\']', f'__version__ = "2.0.1"', content)
+    # Matches: PROJECT_VERSION = "2.0.1" (used in _setup.qmd)
     if "PROJECT_VERSION" in content:
-        content = re.sub(r'PROJECT_VERSION\s*=\s*["\'].*?["\']', f'PROJECT_VERSION = "1.6.1"', content)
-    
+        content = re.sub(r'PROJECT_VERSION\s*=\s*["\'].*?["\']', f'PROJECT_VERSION = "2.0.1"', content)
     return content
 
 def process_project():

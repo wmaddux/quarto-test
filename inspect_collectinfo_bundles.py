@@ -130,23 +130,45 @@ def inspect_bundle(label, path):
         traceback.print_exc()
         return None
 
+BUNDLE_EXTENSIONS = (".tgz", ".tar.gz", ".tar")  # .tar.gz before .tar
+
+def discover_bundles(base_dir):
+    """Find all collect_info* dirs under base_dir and all bundle files (e.g. .tgz, .tar) inside them. Returns list of (label, path)."""
+    bundles = []
+    if not os.path.isdir(base_dir):
+        return bundles
+    for name in sorted(os.listdir(base_dir)):
+        if not name.startswith("collect_info"):
+            continue
+        folder = os.path.join(base_dir, name)
+        if not os.path.isdir(folder):
+            continue
+        for fname in sorted(os.listdir(folder)):
+            path = os.path.join(folder, fname)
+            if not os.path.isfile(path):
+                continue
+            if any(fname.endswith(ext) for ext in BUNDLE_EXTENSIONS):
+                label = f"{name} / {fname}"
+                bundles.append((label, path))
+    return bundles
+
 def main():
     base = os.path.join(os.path.dirname(__file__), "ingest_samples")
-    bundles = [
-        ("6.x", os.path.join(base, "collect_info_v6x", "yahoo-collect_info_20251001_122057.tgz")),
-        ("7.x", os.path.join(base, "collect_info_v7x", "adobe-azure-els.collect_info_20260120_225608.tgz")),
-        ("8.x", os.path.join(base, "collect_info_v8x", "swarit_collect_info_20260108_065237.tgz")),
-    ]
+    bundles = discover_bundles(base)
+    if not bundles:
+        print("No bundles found under ingest_samples/collect_info*")
+        return 1
+    print(f"Found {len(bundles)} bundle(s) in ingest_samples/collect_info*")
     results = []
     for label, path in bundles:
         r = inspect_bundle(label, path)
         if r:
             results.append(r)
     # JSON summary for programmatic use
-    summary_path = os.path.join(os.path.dirname(__file__), "ingest_samples", "bundle_inspection_summary.json")
+    summary_path = os.path.join(base, "bundle_inspection_summary.json")
     with open(summary_path, "w") as f:
         json.dump(results, f, indent=2)
-    print(f"\nSummary written to {summary_path}")
+    print(f"\nSummary written to {summary_path} ({len(results)} bundle(s) inspected)")
     return 0
 
 if __name__ == "__main__":

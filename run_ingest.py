@@ -2,7 +2,7 @@ import sys
 import os
 from ingest_manager import process_collectinfo
 
-__version__ = "1.6.1"
+__version__ = "2.0.1"
 
 def main():
     if len(sys.argv) < 2:

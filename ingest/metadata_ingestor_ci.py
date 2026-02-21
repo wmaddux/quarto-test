@@ -4,7 +4,7 @@ from ingest.base_ingestor import BaseIngestor
 # -----------------------------------------------------------------------------
 # VERSION STAMP
 # -----------------------------------------------------------------------------
-__version__ = "1.6.1"
+__version__ = "2.0.1"
 
 # --- Metadata ---
 # Module: MetadataIngestor
@@ -77,6 +77,72 @@ class MetadataIngestor(BaseIngestor):
         is_xdr = len(as_stat.get('statistics', {}).get('xdr', {})) > 0
         topology = "XDR Enabled" if is_xdr else "Standalone"
 
+        # 7. Index Location (primary + secondary; config-first, 6.x stats fallback)
+        ns_stats = as_stat.get('statistics', {}).get('namespace', {}) or as_stat.get('namespaces', {})
+
+        def _location_from_config_value(v):
+            """Resolve index location from config value (string or dict). Returns 'flash', 'pmem', or 'shmem'."""
+            if v is None:
+                return None
+            s = str(v).lower()
+            if 'flash' in s:
+                return 'flash'
+            if 'pmem' in s:
+                return 'pmem'
+            return 'shmem'
+
+        def _primary_location(ns_conf, ns_stat):
+            svc_conf = ns_conf.get('service', {})
+            v = svc_conf.get('index-type') or ns_conf.get('index-type')
+            loc = _location_from_config_value(v)
+            if loc is not None:
+                return loc
+            # 6.x stats fallback (7.x/8.x have unified index_used_bytes only)
+            if ns_stat:
+                try:
+                    if int(ns_stat.get('index_flash_used_bytes') or 0) > 0:
+                        return 'flash'
+                    if int(ns_stat.get('index_pmem_used_bytes') or 0) > 0:
+                        return 'pmem'
+                except (TypeError, ValueError):
+                    pass
+            return 'shmem'
+
+        def _secondary_location(ns_conf, ns_stat):
+            svc_conf = ns_conf.get('service', {})
+            v = svc_conf.get('sindex-type') or ns_conf.get('sindex-type')
+            loc = _location_from_config_value(v)
+            if loc is not None:
+                return loc
+            if ns_stat:
+                try:
+                    if int(ns_stat.get('sindex_flash_used_bytes') or 0) > 0:
+                        return 'flash'
+                    if int(ns_stat.get('sindex_pmem_used_bytes') or 0) > 0:
+                        return 'pmem'
+                except (TypeError, ValueError):
+                    pass
+            return 'shmem'
+
+        primary_locs = set()
+        secondary_locs = set()
+        for ns_name, ns_conf in ns_configs.items():
+            ns_stat = ns_stats.get(ns_name, {}) if isinstance(ns_stats, dict) else {}
+            primary_locs.add(_primary_location(ns_conf, ns_stat))
+            secondary_locs.add(_secondary_location(ns_conf, ns_stat))
+
+        all_locs = primary_locs | secondary_locs
+        if not all_locs:
+            index_flavor = "RAM (shmem)"
+        elif len(all_locs) > 1:
+            index_flavor = "Mixed"
+        elif "flash" in all_locs:
+            index_flavor = "Flash"
+        elif "pmem" in all_locs:
+            index_flavor = "PMem"
+        else:
+            index_flavor = "RAM (shmem)"
+
         # -------------------------------------------------------------------------
         # DATABASE UPDATE
         # -------------------------------------------------------------------------
@@ -87,11 +153,12 @@ class MetadataIngestor(BaseIngestor):
             ("cloud_platform", platform), 
             ("consistency_model", consistency),
             ("storage_flavor", storage_flavor), 
-            ("topology", topology)
+            ("topology", topology),
+            ("index_flavor", index_flavor)
         ]
         for key, val in meta_items:
             cursor.execute("INSERT OR REPLACE INTO cluster_metadata (key, value) VALUES (?, ?)", (key, val))
         
         conn.commit()
 
-        print(f"✅ {self.name}: Identified as {platform} | {consistency} | {storage_flavor}")
+        print(f"✅ {self.name}: Identified as {platform} | {consistency} | {storage_flavor} | Index: {index_flavor}")

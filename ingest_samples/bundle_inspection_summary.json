@@ -1,6 +1,42 @@
 [
   {
-    "label": "6.x",
+    "label": "collect_info_v6x / nielsen-collect_info_20260113_095356.tar",
+    "path": "/Users/wmaddux/dev/cursor/quarto-test/ingest_samples/collect_info_v6x/nielsen-collect_info_20260113_095356.tar",
+    "aerospike_conf_present": true,
+    "aerospike_conf_paths": [
+      "tmp/collect_info_20260113_095356/20260113_095356_aerospike.conf"
+    ],
+    "telemetry_member": "tmp/collect_info_20260113_095356/20260113_095356_ascinfo.json.zip",
+    "data_top_level": [
+      "2026-01-13 09:53:56 UTC"
+    ],
+    "node_id": "10.92.71.179:3000",
+    "node_top_level": [
+      "as_stat",
+      "sys_stat"
+    ],
+    "paths": {
+      "as_stat": "present",
+      "sys_stat": "present",
+      "as_stat.statistics": "present",
+      "as_stat.config": "present",
+      "as_stat.meta_data": "present",
+      "as_stat.acl": "ABSENT",
+      "as_stat.namespaces": "ABSENT",
+      "as_stat.statistics.namespace": "present",
+      "as_stat.statistics.set": "ABSENT",
+      "as_stat.statistics.service": "present"
+    },
+    "as_stat_keys": [
+      "statistics",
+      "config",
+      "meta_data",
+      "histogram",
+      "latency"
+    ]
+  },
+  {
+    "label": "collect_info_v6x / yahoo-collect_info_20251001_122057.tgz",
     "path": "/Users/wmaddux/dev/cursor/quarto-test/ingest_samples/collect_info_v6x/yahoo-collect_info_20251001_122057.tgz",
     "aerospike_conf_present": true,
     "aerospike_conf_paths": [
@@ -38,7 +74,7 @@
     ]
   },
   {
-    "label": "7.x",
+    "label": "collect_info_v7x / adobe-azure-els.collect_info_20260120_225608.tgz",
     "path": "/Users/wmaddux/dev/cursor/quarto-test/ingest_samples/collect_info_v7x/adobe-azure-els.collect_info_20260120_225608.tgz",
     "aerospike_conf_present": false,
     "aerospike_conf_paths": [],
@@ -74,7 +110,45 @@
     ]
   },
   {
-    "label": "8.x",
+    "label": "collect_info_v8x / swarit_collect_info_20260107_153609.tgz",
+    "path": "/Users/wmaddux/dev/cursor/quarto-test/ingest_samples/collect_info_v8x/swarit_collect_info_20260107_153609.tgz",
+    "aerospike_conf_present": true,
+    "aerospike_conf_paths": [
+      "tmp/collect_info_20260107_153609/20260107_153609_aerospike.conf"
+    ],
+    "telemetry_member": "tmp/collect_info_20260107_153609/20260107_153609_ascinfo.json.zip",
+    "data_top_level": [
+      "2026-01-07 15:36:09 UTC"
+    ],
+    "node_id": "10.217.34.102:3000",
+    "node_top_level": [
+      "as_stat",
+      "sys_stat"
+    ],
+    "paths": {
+      "as_stat": "present",
+      "sys_stat": "present",
+      "as_stat.statistics": "present",
+      "as_stat.config": "present",
+      "as_stat.meta_data": "present",
+      "as_stat.acl": "present",
+      "as_stat.namespaces": "ABSENT",
+      "as_stat.statistics.namespace": "present",
+      "as_stat.statistics.set": "ABSENT",
+      "as_stat.statistics.service": "present",
+      "as_stat.acl.users": "present"
+    },
+    "as_stat_keys": [
+      "statistics",
+      "config",
+      "meta_data",
+      "histogram",
+      "latency",
+      "acl"
+    ]
+  },
+  {
+    "label": "collect_info_v8x / swarit_collect_info_20260108_065237.tgz",
     "path": "/Users/wmaddux/dev/cursor/quarto-test/ingest_samples/collect_info_v8x/swarit_collect_info_20260108_065237.tgz",
     "aerospike_conf_present": true,
     "aerospike_conf_paths": [

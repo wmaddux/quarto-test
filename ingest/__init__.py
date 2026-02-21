@@ -8,7 +8,7 @@ from .config_ingest_ci import ConfigIngestor
 from .features_ingest_ci import FeaturesIngestor
 from .system_info_ingest_ci import SystemInfoIngestor
 
-__version__ = "1.6.1"
+__version__ = "2.0.1"
 
 # Standardized execution order
 INGESTORS = [

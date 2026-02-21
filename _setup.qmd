@@ -30,7 +30,7 @@ from rules import (
 )
 
 # --- Baseline Metadata ---
-PROJECT_VERSION = "1.6.1"
+PROJECT_VERSION = "2.0.1"
 GEN_DATE = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 db_path = "aerospike_health.db"
 
@@ -48,12 +48,17 @@ topology = "Unknown"
 
 if os.path.exists(db_path):
     conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
     try:
         # 1. Base Metadata extraction
         meta_df = pd.read_sql_query("SELECT * FROM cluster_metadata", conn)
         metadata = dict(zip(meta_df['key'], meta_df['value']))
 
-        cluster_display = metadata.get('cluster_name', "Unnamed Cluster")
+        _raw = metadata.get('cluster_name', "Unnamed Cluster")
+        cluster_display = "Unnamed Cluster" if (
+            _raw is None or (isinstance(_raw, float) and pd.isna(_raw)) or
+            not str(_raw).strip() or str(_raw).strip().lower() == "null"
+        ) else _raw
         cloud_platform = metadata.get('cloud_platform', "Unknown")
         server_version = metadata.get('server_version', "Unknown")
         consistency = metadata.get('consistency_model', "Unknown")
@@ -64,7 +69,6 @@ if os.path.exists(db_path):
         idx_type = metadata.get('index_flavor', "Unknown")
         if idx_type == "Unknown":
             # Check for All-Flash indicators in the wide schema (Aerospike 7.x)
-            cursor = conn.cursor()
             cursor.execute("PRAGMA table_info(namespace_stats)")
             cols = [c[1] for c in cursor.fetchall()]
             

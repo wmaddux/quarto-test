@@ -1,5 +1,5 @@
 # rules/__init__.py
-__version__ = "1.6.1"
+__version__ = "2.0.1"
 
 # Map your specific filenames to the report's expected import names
 from . import service_error_skew_check as error_skew_check

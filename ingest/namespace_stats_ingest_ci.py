@@ -1,4 +1,4 @@
-__version__ = "1.6.1"
+__version__ = "2.0.1"
 from ingest.base_ingestor import BaseIngestor
 
 # Canonical metric names used by rules and report (Disk Usage % / HWM).

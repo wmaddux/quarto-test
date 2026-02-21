@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 import sqlite3
@@ -6,7 +7,7 @@ import importlib
 # -----------------------------------------------------------------------------
 # VERSION STAMP
 # -----------------------------------------------------------------------------
-__version__ = "1.6.1"
+__version__ = "2.0.1"
 
 def _get_schema_from_db(conn):
     """Return dict: table_name -> list of (column_name, type)."""
@@ -56,7 +57,7 @@ def _validate_schema_against_baseline(db_path):
             return False, f"Schema mismatch in table '{table}': expected columns {expected[table]}, got {actual[table]}"
     return True, None
 
-def verify():
+def verify(report_mode=False):
     db_path = "aerospike_health.db"
     if not os.path.exists(db_path):
         print(f"❌ FAILED: {db_path} not found. Run ingestion first.")
@@ -93,30 +94,65 @@ def verify():
 
     print(f"--- Integrity Check: Validating {len(REQUIRED_RULES)} Rules ---")
     errors = 0
-    
-    # ... inside your for rule in REQUIRED_RULES loop ...
+
     for rule in REQUIRED_RULES:
         rule_name = getattr(rule, "__name__", str(rule))
         try:
             res = rule.run_check(db_path)
-            rid = res.get('id', '??')  # Get the ID from the rule output
-            
+            rid = res.get('id', '??')
             msg = res.get('message', '')
             if "Error" in msg or "no such" in msg.lower():
                 print(f"❌ {rid:<5} | {rule_name:<30} | SCHEMA ERROR: {msg}")
                 errors += 1
             else:
                 print(f"✅ {rid:<5} | {rule_name:<30} | Logic OK ({res['status']})")
-                
+
+            if report_mode:
+                print(f"    Name: {res.get('name', '')}")
+                print(f"    Status: {res.get('status', '')}")
+                print(f"    Message: {msg}")
+                rem = res.get('remediation', '') or 'None'
+                print(f"    Remediation:\n{rem}")
+                print()
+
         except Exception as e:
             print(f"💥 {rule_name:<30} | CRASHED: {str(e)}")
+            if report_mode:
+                print()
             errors += 1
-    
+
     return errors == 0
 
+def _get_report_metadata(db_path="aerospike_health.db"):
+    """Read cluster_name and server_version from cluster_metadata for report naming. Returns (cluster_name, server_version) with safe filename slugs."""
+    if not os.path.exists(db_path):
+        return "cluster_name", "server_version"
+    conn = sqlite3.connect(db_path)
+    try:
+        cur = conn.execute("SELECT key, value FROM cluster_metadata WHERE key IN ('cluster_name', 'server_version')")
+        meta = dict(cur.fetchall())
+    finally:
+        conn.close()
+    def slug(v):
+        if v is None or (isinstance(v, float) and v != v) or str(v).strip().lower() in ("null", "none", ""):
+            return "unknown"
+        return "".join(c if c.isalnum() or c in ".-_" else "_" for c in str(v).strip())[:50]
+    return slug(meta.get("cluster_name")), slug(meta.get("server_version"))
+
 if __name__ == "__main__":
-    if verify():
+    parser = argparse.ArgumentParser(description="Validate DB schema and run health rules.")
+    parser.add_argument(
+        "--report",
+        action="store_true",
+        help="Print full rule output (id, status, message, remediation) for each rule to review customer-facing guidance.",
+    )
+    args = parser.parse_args()
+
+    if verify(report_mode=args.report):
+        cluster_slug, version_slug = _get_report_metadata()
         print("\n✨ PASS: Project integrity is sound. Safe to render report.")
+        print('Run: quarto render report.qmd -o "report-<customer>-{}-{}.html"'.format(cluster_slug, version_slug))
+        print("(Replace <customer> with the customer name; cluster_name and server_version are derived from the DB.)")
         sys.exit(0)
     else:
         print("\n🛑 FAIL: Integrity issues detected. Fix the rules/schema above.")

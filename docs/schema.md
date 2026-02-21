@@ -66,6 +66,21 @@ Configuration key/value per node (flattened from collectinfo config block). Used
 
 ---
 
+### static_configs
+
+Static aerospike.conf key/value per node (parsed from the collectinfo bundle file). Used by the Config Drift rule (3.b) to compare live running config (`node_configs`) with the on-disk config file.
+
+| Column | Type | Meaning |
+|--------|------|---------|
+| run_id | TEXT | Ingest run identifier. |
+| node_id | TEXT | Node address (same as in node_configs for JOIN). |
+| config_name | TEXT | Dot-notated config key (must match node_configs keys for drift comparison). |
+| value | TEXT | Value from the .conf file. |
+
+**Source:** The aerospike.conf file inside the collectinfo tarball is located by name, parsed by `ingest_manager.parse_aerospike_conf()`, and inserted once per node so each node has the same static keys for JOIN. If no aerospike.conf member is found in the bundle, this table is empty and the Config Drift rule reports DATA MISSING.
+
+---
+
 ### node_stats
 
 Node-level statistics (flattened to dot-notated metric keys). Used by version_consistency, error_skew, and related rules.

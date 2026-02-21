@@ -2,7 +2,7 @@ import tarfile
 import json
 import gzip
 import io
-__version__ = "1.6.1"
+__version__ = "2.0.1"
 
 def interrogate():
     bundle_path = "aws-common.collect_info_20260120_230014.tgz"

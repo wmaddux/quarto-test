@@ -32,6 +32,14 @@ CREATE TABLE IF NOT EXISTS node_configs (
     source TEXT
 );
 
+-- Static aerospike.conf key/value per node (ingest_manager from bundle file)
+CREATE TABLE IF NOT EXISTS static_configs (
+    run_id TEXT,
+    node_id TEXT,
+    config_name TEXT,
+    value TEXT
+);
+
 -- Node-level stats, flattened (node_stats_ingest_ci)
 CREATE TABLE IF NOT EXISTS node_stats (
     run_id TEXT,
