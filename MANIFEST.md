@@ -42,6 +42,8 @@
 | set_stats_ingest_ci.py | set_stats |
 | security_stats_ingest_ci.py | security_stats |
 
+*Optional (not in default pipeline):* platform_ingestor_ci.py writes `cloud_platform` to cluster_metadata.
+
 **Static config:** When the collectinfo bundle includes **aerospike.conf**, `ingest_manager.py` locates it in the tarball, parses it, and inserts into **static_configs** (see [schema/baseline.sql](schema/baseline.sql), [docs/schema.md](docs/schema.md)). The Config Drift rule (3.b) compares `node_configs` (live) to `static_configs` (file). If the file is missing from the bundle, the rule reports DATA MISSING.
 
 **Planned:** log_ingestor.py (aerospike.log).
@@ -76,7 +78,7 @@
    The canonical schema is defined in **schema/baseline.sql** and documented in **docs/schema.md**. All ingestors and `check_integrity` align to it; the DB is created from the baseline at ingest init (ingestors only INSERT). Downstream rules depend only on this schema. `check_integrity` validates the live DB schema against the baseline before running rules.
 
 2. **aerospike.conf in bundle**  
-   aerospike.conf must be included in the collectinfo bundle by default. If the file is in a non-default location, the asadm command must explicitly request that path; permissions may be required to access it. **If aerospike.conf is missing, ingestion must fail and must not proceed**; operators must be instructed to include it (and, if needed, path and permissions) and re-run. Document how to request path and permissions for asadm.
+   aerospike.conf should be included in the collectinfo bundle by default. If the file is in a non-default location, the asadm command must explicitly request that path; permissions may be required to access it. **If aerospike.conf is missing, ingestion proceeds**; the Config Drift rule (3.b) reports DATA MISSING. Operators should be instructed to include it (and, if needed, path and permissions) for full drift checking. Document how to request path and permissions for asadm.
 
 3. **Ingest tagging**  
    Ingested data must be tagged with an identifier (e.g. `run_id` and/or bundle content hash) so that: (a) runs can be compared to future ingest, and (b) duplicate ingest can be detected or avoided. Store the tag in the DB (e.g. in `cluster_metadata` or a dedicated `ingest_runs` table).
@@ -85,7 +87,7 @@
 
 ## 6. Backlog / Next Steps
 
-- **Ingest process:** Standardize SQLite schema for 6.x, 7.x, 8.x; add schema baseline and validation; enforce aerospike.conf presence; add ingest tagging (run_id / bundle hash).
+- **Ingest process:** Standardize SQLite schema for 6.x, 7.x, 8.x; add schema baseline and validation; add ingest tagging (run_id / bundle hash). (aerospike.conf: ingest proceeds when missing; Config Drift reports DATA MISSING.)
 - **Log & config ingestion:** First iterations of aerospike.log and aerospike.conf parsers.
 - **UI:** Refine Plotly legends and multi-node presentation (e.g. _performance_utilization.qmd).
 - **Capacity forecasting:** Finalize “days-to-HWM” logic.
