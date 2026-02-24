@@ -1,5 +1,7 @@
 # Aerospike Health Analyzer (v2.0.1)
 
+This project lives at **citrusleaf/tam-tools/tam-flash-report**. Report title: *Aerospike Health and Performance Report*.
+
 A universal diagnostic framework for Aerospike clusters, providing native support for **6.x, 7.x, and 8.x** Enterprise editions. It ingests `collectinfo` telemetry into a relational SQLite database, executes a version-aware rule engine, and generates modular Quarto HTML reports.
 
 ---
@@ -35,6 +37,8 @@ flowchart LR
   setup --> quarto
 ```
 
+The *Validate* step is for development and debugging; end users only run *Ingest* and *Report*.
+
 ---
 
 ## Prerequisites & Installation
@@ -45,11 +49,11 @@ flowchart LR
 * **Aerospike Admin (asadm)**: Necessary for collecting the telemetry bundles (`.tgz`) from target clusters.
 
 ### Setup
-From the project root, create and populate a virtual environment (recommended):
+Clone the parent repo and work from the **tam-flash-report** directory (project root for all commands below). Create and activate a virtual environment (recommended):
 
 ```bash
-git clone <your-repo-url>
-cd <project-directory>
+git clone https://github.com/citrusleaf/tam-tools.git
+cd tam-tools/tam-flash-report
 
 # Create venv and install dependencies (pandas, plotly, jupyter, pyyaml)
 ./setup_venv.sh
@@ -64,8 +68,10 @@ Dependencies include **pandas**, **plotly**, **jupyter**, and **pyyaml** (requir
 
 ## Directory Structure
 
+Paths below are relative to the project root (`tam-flash-report/`).
+
 ```text
-<project>/
+tam-flash-report/
 ├── MANIFEST.md           # Project scope, requirements, backlog
 ├── run_ingest.py         # Ingestion entry point
 ├── ingest_manager.py     # Applies schema/baseline.sql, runs ingestors per node
@@ -107,23 +113,24 @@ python3 run_ingest.py path/to/your_bundle.tgz
 # python3 run_ingest.py ingest_samples/collect_info_v7x/adobe-azure-els.collect_info_20260120_225608.tgz
 ```
 
-### 2. Verify and Render
-Run the integrity check before rendering. It validates that the live DB schema matches `schema/baseline.sql`, then runs all rules.
+### 2. Render the Report
 
 ```bash
-python3 check_integrity.py
 quarto render report.qmd
 ```
 
-**Fast e2e loop (ingest + integrity, no report):** Run `python3 tests/run_e2e.py <bundle.tgz>` to ingest and validate in one step. Optional: set `AEROSPIKE_E2E_BUNDLE` to a fixture path and run `python3 tests/run_e2e.py`. See [docs/testing.md](docs/testing.md).
+---
 
-### 3. Maintain the Baseline
-Use the internal tools to keep versioning and Git history synchronized.
+## Development
 
-```bash
-python3 set_version.py
-python3 commit_baseline.py
-```
+For maintainers and contributors:
+
+- **Validate DB and run rules** (e.g. before changing code or releasing):  
+  `python3 check_integrity.py` — validates that the live DB schema matches `schema/baseline.sql`, then runs all rules.
+- **E2E (ingest + integrity, no report):**  
+  `python3 tests/run_e2e.py <bundle.tgz>`. Optional: set `AEROSPIKE_E2E_BUNDLE` to a fixture path and run `python3 tests/run_e2e.py`. See [docs/testing.md](docs/testing.md).
+- **Maintain the baseline** (version and schema):  
+  `python3 set_version.py` and `python3 commit_baseline.py` when releasing or updating the canonical schema.
 
 ---
 
