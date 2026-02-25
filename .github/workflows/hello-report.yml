@@ -1,0 +1,14 @@
+name: Hello Report (tam-flash-report)
+on:
+  workflow_dispatch:
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create placeholder report
+        run: echo "Hello from tam-flash-report Actions at $(date -Iseconds)" > report-placeholder.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: report-placeholder
+          path: report-placeholder.txt
